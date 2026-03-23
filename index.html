@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-circle"></div>
+        <span>My Dashboard</span>
+      </div>
+      <h1>Welcome back</h1>
+      <p class="login-sub">Sign in to your personal space</p>
+      <div id="login-error" class="error-msg" style="display:none"></div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="btn-primary" id="login-btn" onclick="handleLogin()">Sign in</button>
+      <p class="login-footer">Don't have an account? <a href="#" onclick="showSignup()">Sign up</a></p>
+    </div>
+  </div>
+
+  <!-- SIGNUP SCREEN -->
+  <div id="signup-screen" style="display:none">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-circle"></div>
+        <span>My Dashboard</span>
+      </div>
+      <h1>Create account</h1>
+      <p class="login-sub">Start organizing your life</p>
+      <div id="signup-error" class="error-msg" style="display:none"></div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="you@example.com"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="Min 6 characters"/>
+      </div>
+      <button class="btn-primary" id="signup-btn" onclick="handleSignup()">Create account</button>
+      <p class="login-footer">Already have an account? <a href="#" onclick="showLogin()">Sign in</a></p>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" style="display:none">
+    <div class="dash">
+      <div class="sidebar">
+        <div class="sidebar-top">
+          <div class="sidebar-title">My Dashboard</div>
+        </div>
+        <nav>
+          <div class="nav-item active" onclick="nav('todo')"><span class="nav-icon">✓</span>To-do list</div>
+          <div class="nav-item" onclick="nav('books')"><span class="nav-icon">📖</span>Books</div>
+          <div class="nav-item" onclick="nav('travel')"><span class="nav-icon">✈</span>Travel</div>
+          <div class="nav-item" onclick="nav('subs')"><span class="nav-icon">♻</span>Subscriptions</div>
+          <div class="nav-item" onclick="nav('restaurants')"><span class="nav-icon">🍽</span>Restaurants</div>
+          <div class="nav-item" onclick="nav('budget')"><span class="nav-icon">$</span>Budget</div>
+          <div class="nav-item" onclick="nav('car')"><span class="nav-icon">🚗</span>Car maintenance</div>
+          <div class="nav-item" onclick="nav('videos')"><span class="nav-icon">▶</span>Videos</div>
+          <div class="nav-item" onclick="nav('groceries')"><span class="nav-icon">🛒</span>Groceries</div>
+          <div class="nav-item" onclick="nav('workout')"><span class="nav-icon">💪</span>Workout log</div>
+        </nav>
+        <div class="sidebar-bottom">
+          <span id="user-email-display"></span>
+          <button class="btn-signout" onclick="handleSignOut()">Sign out</button>
+        </div>
+      </div>
+
+      <div class="main">
+        <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div></div>
+
+        <!-- TO-DO -->
+        <div id="sec-todo" class="section active">
+          <div class="section-header"><span class="section-title">To-do list</span></div>
+          <div class="add-form">
+            <input id="todo-in" placeholder="New task…" onkeydown="if(event.key==='Enter')addItem('todo')">
+            <select id="todo-pri"><option value="normal">Normal</option><option value="high">High priority</option><option value="low">Low priority</option></select>
+            <button class="add-btn" onclick="addItem('todo')">+ Add</button>
+          </div>
+          <div class="item-list" id="todo-list"></div>
+        </div>
+
+        <!-- BOOKS -->
+        <div id="sec-books" class="section">
+          <div class="section-header"><span class="section-title">Books</span></div>
+          <div class="add-form">
+            <input id="books-title" placeholder="Title…">
+            <input id="books-author" placeholder="Author (optional)">
+            <select id="books-status"><option value="unread">Want to read</option><option value="read">Already read</option></select>
+            <button class="add-btn" onclick="addItem('books')">+ Add</button>
+          </div>
+          <div class="item-list" id="books-list"></div>
+        </div>
+
+        <!-- TRAVEL -->
+        <div id="sec-travel" class="section">
+          <div class="section-header"><span class="section-title">Travel</span></div>
+          <div class="add-form">
+            <input id="travel-city" placeholder="City / destination…">
+            <input id="travel-country" placeholder="Country (optional)">
+            <select id="travel-status"><option value="wish">Wish list</option><option value="visited">Visited</option></select>
+            <button class="add-btn" onclick="addItem('travel')">+ Add</button>
+          </div>
+          <div class="item-list" id="travel-list"></div>
+        </div>
+
+        <!-- SUBSCRIPTIONS -->
+        <div id="sec-subs" class="section">
+          <div class="section-header"><span class="section-title">Subscriptions</span></div>
+          <div class="add-form">
+            <input id="subs-name" placeholder="Service name…">
+            <input id="subs-cost" placeholder="$/mo" type="number" min="0" step="0.01" style="max-width:90px">
+            <select id="subs-status"><option value="active">Active</option><option value="paused">Paused</option></select>
+            <button class="add-btn" onclick="addItem('subs')">+ Add</button>
+          </div>
+          <div id="subs-total" class="meta-info"></div>
+          <div class="item-list" id="subs-list"></div>
+        </div>
+
+        <!-- RESTAURANTS -->
+        <div id="sec-restaurants" class="section">
+          <div class="section-header"><span class="section-title">Restaurants</span></div>
+          <div class="add-form">
+            <input id="restaurants-name" placeholder="Restaurant name…">
+            <input id="restaurants-cuisine" placeholder="Cuisine (optional)">
+            <select id="restaurants-status"><option value="want">Want to try</option><option value="tried">Tried it</option></select>
+            <button class="add-btn" onclick="addItem('restaurants')">+ Add</button>
+          </div>
+          <div class="item-list" id="restaurants-list"></div>
+        </div>
+
+        <!-- BUDGET -->
+        <div id="sec-budget" class="section">
+          <div class="section-header"><span class="section-title">Budget</span></div>
+          <div class="budget-grid">
+            <div class="budget-card"><div class="budget-lbl">Monthly income</div><div class="budget-val income" id="b-income">$0.00</div></div>
+            <div class="budget-card"><div class="budget-lbl">Total expenses</div><div class="budget-val expense" id="b-expense">$0.00</div></div>
+            <div class="budget-card"><div class="budget-lbl">Balance</div><div class="budget-val balance" id="b-balance">$0.00</div></div>
+            <div class="budget-card"><div class="budget-lbl">Spent vs income</div><div class="progress-bar"><div class="progress-fill" id="b-bar" style="width:0%"></div></div><div class="meta-info" id="b-pct" style="margin-top:4px">0%</div></div>
+          </div>
+          <div class="add-form">
+            <input id="budget-label" placeholder="Description…">
+            <input id="budget-amount" placeholder="Amount" type="number" min="0" step="0.01" style="max-width:110px">
+            <select id="budget-type"><option value="expense">Expense</option><option value="income">Income</option></select>
+            <input id="budget-category" placeholder="Category">
+            <button class="add-btn" onclick="addItem('budget')">+ Add</button>
+          </div>
+          <div class="item-list" id="budget-list"></div>
+        </div>
+
+        <!-- CAR -->
+        <div id="sec-car" class="section">
+          <div class="section-header"><span class="section-title">Car maintenance</span></div>
+          <div class="add-form">
+            <input id="car-task" placeholder="Task (e.g. Oil change)…">
+            <input id="car-date" type="date">
+            <input id="car-miles" placeholder="Mileage" type="number" style="max-width:110px">
+            <select id="car-status"><option value="pending">Pending</option><option value="done">Done</option><option value="overdue">Overdue</option></select>
+            <button class="add-btn" onclick="addItem('car')">+ Add</button>
+          </div>
+          <div class="item-list" id="car-list"></div>
+        </div>
+
+        <!-- VIDEOS -->
+        <div id="sec-videos" class="section">
+          <div class="section-header"><span class="section-title">Videos to watch</span></div>
+          <div class="add-form">
+            <input id="videos-title" placeholder="Title…">
+            <input id="videos-source" placeholder="Source (YouTube, Netflix…)">
+            <select id="videos-status"><option value="todo">To watch</option><option value="watching">Watching</option><option value="done">Done</option></select>
+            <button class="add-btn" onclick="addItem('videos')">+ Add</button>
+          </div>
+          <div class="item-list" id="videos-list"></div>
+        </div>
+
+        <!-- GROCERIES -->
+        <div id="sec-groceries" class="section">
+          <div class="section-header"><span class="section-title">Groceries</span></div>
+          <div class="add-form">
+            <input id="groceries-item" placeholder="Item…">
+            <input id="groceries-qty" placeholder="Qty" style="max-width:80px">
+            <select id="groceries-status"><option value="need">Need to buy</option><option value="bought">Bought</option></select>
+            <button class="add-btn" onclick="addItem('groceries')">+ Add</button>
+          </div>
+          <div class="add-form" style="margin-top:-4px">
+            <button class="add-btn" onclick="clearBought()">Clear bought items</button>
+          </div>
+          <div class="item-list" id="groceries-list"></div>
+        </div>
+
+        <!-- WORKOUT -->
+        <div id="sec-workout" class="section">
+          <div class="section-header"><span class="section-title">Workout log</span></div>
+          <div class="add-form">
+            <input id="workout-type" placeholder="Activity (e.g. Run, Gym)…">
+            <input id="workout-date" type="date">
+            <input id="workout-duration" placeholder="Duration (min)" type="number" style="max-width:120px">
+            <input id="workout-notes" placeholder="Notes (optional)">
+            <button class="add-btn" onclick="addItem('workout')">+ Log</button>
+          </div>
+          <div id="workout-stats" class="stats-row"></div>
+          <div class="workout-grid" id="workout-list"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
