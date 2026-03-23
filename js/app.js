@@ -250,13 +250,14 @@ async function renderTodo() {
 // ── BOOKS ──────────────────────────────────────────────────────────────────
 async function addBook() {
   const title = val('books-title'); if (!title) return;
-  await dbInsert('books', { title, author: val('books-author'), status: val('books-status') });
-  clr('books-title', 'books-author');
+  await dbInsert('books', { title, author: val('books-author'), category: val('books-category'), status: val('books-status') });
+  v('books-title').value = '';
+  v('books-author').value = '';
   await renderBooks();
 }
 
 async function toggleBook(id, status) {
-  await dbUpdate('books', id, { status: status === 'read' ? 'unread' : 'read' });
+  await dbUpdate('books', id, { status: status === 'Read' ? 'Want to read' : 'Read' });
   await renderBooks();
 }
 
@@ -265,26 +266,33 @@ async function deleteBook(id) { await dbDelete('books', id); await renderBooks()
 async function renderBooks() {
   const rows = await dbSelect('books', 'title');
   const el = v('books-list');
-  if (!rows.length) { el.innerHTML = '<div class="empty">No books yet</div>'; return; }
+  if (!rows.length) { el.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--lb-200)">No books yet</td></tr>`; return; }
+  const stClass = { 'Read': 'status-done', 'Reading': 'status-progress', 'Want to read': 'status-todo' };
   el.innerHTML = rows.map(b => `
-    <div class="item-row">
-      <input class="check" type="checkbox" ${b.status === 'read' ? 'checked' : ''} onchange="toggleBook('${b.id}', '${b.status}')">
-      <span class="item-text ${b.status === 'read' ? 'done' : ''}">${esc(b.title)}${b.author ? ` <span style="font-size:11px;color:#adb5bd">by ${esc(b.author)}</span>` : ''}</span>
-      ${badge(b.status, b.status === 'read' ? 'Read' : 'To read')}
-      ${delBtn(`deleteBook('${b.id}')`)}
-    </div>`).join('');
+    <tr class="${b.status === 'Read' ? 'done-row' : ''}">
+      <td style="display:flex;align-items:center;gap:8px">
+        <input class="check" type="checkbox" ${b.status === 'Read' ? 'checked' : ''} onchange="toggleBook('${b.id}', '${b.status}')">
+        ${esc(b.title)}
+      </td>
+      <td>${esc(b.author || '')}</td>
+      <td>${esc(b.category || '')}</td>
+      <td class="${stClass[b.status] || ''}">${esc(b.status || '')}</td>
+      <td>${delBtn(`deleteBook('${b.id}')`)}</td>
+    </tr>`).join('');
 }
 
 // ── TRAVEL ─────────────────────────────────────────────────────────────────
 async function addTravel() {
   const city = val('travel-city'); if (!city) return;
-  await dbInsert('travel', { city, country: val('travel-country'), status: val('travel-status') });
-  clr('travel-city', 'travel-country');
+  await dbInsert('travel', { city, country: val('travel-country'), continent: val('travel-continent'), trip_type: val('travel-type'), status: val('travel-status'), notes: val('travel-notes') });
+  v('travel-city').value = '';
+  v('travel-country').value = '';
+  v('travel-notes').value = '';
   await renderTravel();
 }
 
 async function toggleTravel(id, status) {
-  await dbUpdate('travel', id, { status: status === 'visited' ? 'wish' : 'visited' });
+  await dbUpdate('travel', id, { status: status === 'Visited' ? 'Wish list' : 'Visited' });
   await renderTravel();
 }
 
@@ -293,14 +301,21 @@ async function deleteTravel(id) { await dbDelete('travel', id); await renderTrav
 async function renderTravel() {
   const rows = await dbSelect('travel', 'city');
   const el = v('travel-list');
-  if (!rows.length) { el.innerHTML = '<div class="empty">No destinations yet</div>'; return; }
+  if (!rows.length) { el.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--lb-200)">No destinations yet</td></tr>`; return; }
+  const stClass = { 'Visited': 'status-done', 'Planned': 'status-progress', 'Wish list': 'status-todo' };
   el.innerHTML = rows.map(c => `
-    <div class="item-row">
-      <input class="check" type="checkbox" ${c.status === 'visited' ? 'checked' : ''} onchange="toggleTravel('${c.id}', '${c.status}')">
-      <span class="item-text ${c.status === 'visited' ? 'done' : ''}">${esc(c.city)}${c.country ? ` <span style="font-size:11px;color:#adb5bd">${esc(c.country)}</span>` : ''}</span>
-      ${badge(c.status === 'visited' ? 'visited' : 'wish', c.status === 'visited' ? 'Visited' : 'Wish list')}
-      ${delBtn(`deleteTravel('${c.id}')`)}
-    </div>`).join('');
+    <tr class="${c.status === 'Visited' ? 'done-row' : ''}">
+      <td style="display:flex;align-items:center;gap:8px">
+        <input class="check" type="checkbox" ${c.status === 'Visited' ? 'checked' : ''} onchange="toggleTravel('${c.id}', '${c.status}')">
+        ${esc(c.city)}
+      </td>
+      <td>${esc(c.country || '')}</td>
+      <td>${esc(c.continent || '')}</td>
+      <td>${esc(c.trip_type || '')}</td>
+      <td class="${stClass[c.status] || ''}">${esc(c.status || '')}</td>
+      <td>${esc(c.notes || '')}</td>
+      <td>${delBtn(`deleteTravel('${c.id}')`)}</td>
+    </tr>`).join('');
 }
 
 // ── SUBSCRIPTIONS ──────────────────────────────────────────────────────────
@@ -336,13 +351,15 @@ async function renderSubs() {
 // ── RESTAURANTS ────────────────────────────────────────────────────────────
 async function addRestaurant() {
   const name = val('restaurants-name'); if (!name) return;
-  await dbInsert('restaurants', { name, cuisine: val('restaurants-cuisine'), status: val('restaurants-status') });
-  clr('restaurants-name', 'restaurants-cuisine');
+  await dbInsert('restaurants', { name, cuisine: val('restaurants-cuisine'), location: val('restaurants-location'), price_range: val('restaurants-price'), status: val('restaurants-status'), notes: val('restaurants-notes') });
+  v('restaurants-name').value = '';
+  v('restaurants-location').value = '';
+  v('restaurants-notes').value = '';
   await renderRestaurants();
 }
 
 async function toggleRestaurant(id, status) {
-  await dbUpdate('restaurants', id, { status: status === 'tried' ? 'want' : 'tried' });
+  await dbUpdate('restaurants', id, { status: status === 'Tried' ? 'Want to try' : 'Tried' });
   await renderRestaurants();
 }
 
@@ -351,14 +368,21 @@ async function deleteRestaurant(id) { await dbDelete('restaurants', id); await r
 async function renderRestaurants() {
   const rows = await dbSelect('restaurants', 'name');
   const el = v('restaurants-list');
-  if (!rows.length) { el.innerHTML = '<div class="empty">No restaurants yet</div>'; return; }
+  if (!rows.length) { el.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--lb-200)">No restaurants yet</td></tr>`; return; }
+  const stClass = { 'Favorite': 'status-done', 'Tried': 'status-progress', 'Want to try': 'status-todo' };
   el.innerHTML = rows.map(r => `
-    <div class="item-row">
-      <input class="check" type="checkbox" ${r.status === 'tried' ? 'checked' : ''} onchange="toggleRestaurant('${r.id}', '${r.status}')">
-      <span class="item-text ${r.status === 'tried' ? 'done' : ''}">${esc(r.name)}${r.cuisine ? ` <span style="font-size:11px;color:#adb5bd">${esc(r.cuisine)}</span>` : ''}</span>
-      ${badge(r.status === 'tried' ? 'tried' : 'want', r.status === 'tried' ? 'Tried' : 'Want to try')}
-      ${delBtn(`deleteRestaurant('${r.id}')`)}
-    </div>`).join('');
+    <tr class="${r.status === 'Tried' || r.status === 'Favorite' ? 'done-row' : ''}">
+      <td style="display:flex;align-items:center;gap:8px">
+        <input class="check" type="checkbox" ${r.status !== 'Want to try' ? 'checked' : ''} onchange="toggleRestaurant('${r.id}', '${r.status}')">
+        ${esc(r.name)}
+      </td>
+      <td>${esc(r.cuisine || '')}</td>
+      <td>${esc(r.location || '')}</td>
+      <td>${esc(r.price_range || '')}</td>
+      <td class="${stClass[r.status] || ''}">${esc(r.status || '')}</td>
+      <td>${esc(r.notes || '')}</td>
+      <td>${delBtn(`deleteRestaurant('${r.id}')`)}</td>
+    </tr>`).join('');
 }
 
 // ── BUDGET ─────────────────────────────────────────────────────────────────
@@ -400,14 +424,17 @@ async function renderBudget() {
 // ── CAR MAINTENANCE ────────────────────────────────────────────────────────
 async function addCar() {
   const task = val('car-task'); if (!task) return;
-  await dbInsert('car_maintenance', { task, service_date: v('car-date').value || null, mileage: parseInt(v('car-miles').value) || null, status: val('car-status') });
-  clr('car-task', 'car-miles');
+  await dbInsert('car_maintenance', { task, car_type: val('car-type'), service_date: v('car-date').value || null, mileage: parseInt(v('car-miles').value) || null, cost: parseFloat(v('car-cost').value) || null, status: val('car-status'), notes: val('car-notes') });
+  v('car-task').value = '';
   v('car-date').value = '';
+  v('car-miles').value = '';
+  v('car-cost').value = '';
+  v('car-notes').value = '';
   await renderCar();
 }
 
 async function toggleCar(id, status) {
-  await dbUpdate('car_maintenance', id, { status: status === 'done' ? 'pending' : 'done' });
+  await dbUpdate('car_maintenance', id, { status: status === 'Done' ? 'Pending' : 'Done' });
   await renderCar();
 }
 
@@ -416,16 +443,22 @@ async function deleteCar(id) { await dbDelete('car_maintenance', id); await rend
 async function renderCar() {
   const rows = await dbSelect('car_maintenance', 'service_date');
   const el = v('car-list');
-  if (!rows.length) { el.innerHTML = '<div class="empty">No maintenance tasks yet</div>'; return; }
+  if (!rows.length) { el.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--lb-200)">No maintenance tasks yet</td></tr>`; return; }
+  const stClass = { 'Done': 'status-done', 'Overdue': 'priority-high', 'Pending': 'status-todo' };
   el.innerHTML = rows.map(c => `
-    <div class="item-row">
-      <input class="check" type="checkbox" ${c.status === 'done' ? 'checked' : ''} onchange="toggleCar('${c.id}', '${c.status}')">
-      <span class="item-text ${c.status === 'done' ? 'done' : ''}">${esc(c.task)}</span>
-      ${c.service_date ? `<span class="item-meta">${c.service_date}</span>` : ''}
-      ${c.mileage ? `<span class="item-meta">${c.mileage.toLocaleString()} mi</span>` : ''}
-      ${badge(c.status, c.status === 'overdue' ? 'Overdue' : c.status === 'done' ? 'Done' : 'Pending')}
-      ${delBtn(`deleteCar('${c.id}')`)}
-    </div>`).join('');
+    <tr class="${c.status === 'Done' ? 'done-row' : ''}">
+      <td style="display:flex;align-items:center;gap:8px">
+        <input class="check" type="checkbox" ${c.status === 'Done' ? 'checked' : ''} onchange="toggleCar('${c.id}', '${c.status}')">
+        ${esc(c.task)}
+      </td>
+      <td>${esc(c.car_type || '')}</td>
+      <td>${c.service_date || ''}</td>
+      <td>${c.mileage ? c.mileage.toLocaleString() + ' mi' : ''}</td>
+      <td>${c.cost ? '$' + Number(c.cost).toFixed(2) : ''}</td>
+      <td class="${stClass[c.status] || ''}">${esc(c.status || '')}</td>
+      <td>${esc(c.notes || '')}</td>
+      <td>${delBtn(`deleteCar('${c.id}')`)}</td>
+    </tr>`).join('');
 }
 
 // ── VIDEOS ─────────────────────────────────────────────────────────────────
