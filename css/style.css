@@ -455,6 +455,12 @@ nav { flex: 1; padding: 0.25rem 0; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+.cell-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* ── TODO TABLE ── */
 .todo-table-wrap {
   overflow-x: auto;
