@@ -79,18 +79,56 @@
         </div>
       </div>
 
-      <div class="main">
+      <div class="main-wrapper">
+
+        <!-- DAILY MESSAGE BAR -->
+        <div class="daily-bar">
+          <textarea id="daily-msg" placeholder="Write your daily message here…" onblur="saveDailyMsg()" rows="1"></textarea>
+        </div>
+
+        <div class="main">
         <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div></div>
 
         <!-- TO-DO -->
         <div id="sec-todo" class="section active">
           <div class="section-header"><span class="section-title">To-do list</span></div>
-          <div class="add-form">
-            <input id="todo-in" placeholder="New task…" onkeydown="if(event.key==='Enter')addItem('todo')">
-            <select id="todo-pri"><option value="normal">Normal</option><option value="high">High priority</option><option value="low">Low priority</option></select>
-            <button class="add-btn" onclick="addItem('todo')">+ Add</button>
+          <div class="todo-table-wrap">
+            <table class="todo-table">
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Priority</th>
+                  <th>Category</th>
+                  <th>Due date</th>
+                  <th>Status</th>
+                  <th>Note</th>
+                  <th></th>
+                </tr>
+                <tr class="add-row">
+                  <td><input id="todo-task" placeholder="Task…"></td>
+                  <td>
+                    <select id="todo-pri">
+                      <option value="High">High</option>
+                      <option value="Medium" selected>Medium</option>
+                      <option value="Low">Low</option>
+                    </select>
+                  </td>
+                  <td><input id="todo-cat" placeholder="Category…"></td>
+                  <td><input id="todo-due" type="date"></td>
+                  <td>
+                    <select id="todo-status">
+                      <option value="To do">To do</option>
+                      <option value="In progress">In progress</option>
+                      <option value="Done">Done</option>
+                    </select>
+                  </td>
+                  <td><input id="todo-note" placeholder="Note…"></td>
+                  <td><button class="add-btn" onclick="addItem('todo')">+ Add</button></td>
+                </tr>
+              </thead>
+              <tbody id="todo-list"></tbody>
+            </table>
           </div>
-          <div class="item-list" id="todo-list"></div>
         </div>
 
         <!-- BOOKS -->
@@ -216,6 +254,7 @@
         </div>
 
       </div>
+      </div><!-- end main-wrapper -->
     </div>
   </div>
 
