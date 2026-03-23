@@ -234,10 +234,7 @@ async function renderTodo() {
   const stClass  = { 'Done': 'status-done', 'In progress': 'status-progress', 'To do': 'status-todo' };
   el.innerHTML = rows.map(t => `
     <tr class="${t.done ? 'done-row' : ''}">
-      <td style="display:flex;align-items:center;gap:8px">
-        <input class="check" type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo('${t.id}', ${t.done})">
-        ${esc(t.text)}
-      </td>
+      <td><div class="cell-check"><input class="check" type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo('${t.id}', ${t.done})">${esc(t.text)}</div></td>
       <td class="${priClass[t.priority] || ''}">${esc(t.priority || '')}</td>
       <td>${esc(t.category || '')}</td>
       <td>${t.due_date || ''}</td>
@@ -270,10 +267,7 @@ async function renderBooks() {
   const stClass = { 'Read': 'status-done', 'Reading': 'status-progress', 'Want to read': 'status-todo' };
   el.innerHTML = rows.map(b => `
     <tr class="${b.status === 'Read' ? 'done-row' : ''}">
-      <td style="display:flex;align-items:center;gap:8px">
-        <input class="check" type="checkbox" ${b.status === 'Read' ? 'checked' : ''} onchange="toggleBook('${b.id}', '${b.status}')">
-        ${esc(b.title)}
-      </td>
+      <td><div class="cell-check"><input class="check" type="checkbox" ${b.status === 'Read' ? 'checked' : ''} onchange="toggleBook('${b.id}', '${b.status}')">${esc(b.title)}</div></td>
       <td>${esc(b.author || '')}</td>
       <td>${esc(b.category || '')}</td>
       <td class="${stClass[b.status] || ''}">${esc(b.status || '')}</td>
@@ -305,10 +299,7 @@ async function renderTravel() {
   const stClass = { 'Visited': 'status-done', 'Planned': 'status-progress', 'Wish list': 'status-todo' };
   el.innerHTML = rows.map(c => `
     <tr class="${c.status === 'Visited' ? 'done-row' : ''}">
-      <td style="display:flex;align-items:center;gap:8px">
-        <input class="check" type="checkbox" ${c.status === 'Visited' ? 'checked' : ''} onchange="toggleTravel('${c.id}', '${c.status}')">
-        ${esc(c.city)}
-      </td>
+      <td><div class="cell-check"><input class="check" type="checkbox" ${c.status === 'Visited' ? 'checked' : ''} onchange="toggleTravel('${c.id}', '${c.status}')">${esc(c.city)}</div></td>
       <td>${esc(c.country || '')}</td>
       <td>${esc(c.continent || '')}</td>
       <td>${esc(c.trip_type || '')}</td>
@@ -372,10 +363,7 @@ async function renderRestaurants() {
   const stClass = { 'Favorite': 'status-done', 'Tried': 'status-progress', 'Want to try': 'status-todo' };
   el.innerHTML = rows.map(r => `
     <tr class="${r.status === 'Tried' || r.status === 'Favorite' ? 'done-row' : ''}">
-      <td style="display:flex;align-items:center;gap:8px">
-        <input class="check" type="checkbox" ${r.status !== 'Want to try' ? 'checked' : ''} onchange="toggleRestaurant('${r.id}', '${r.status}')">
-        ${esc(r.name)}
-      </td>
+      <td><div class="cell-check"><input class="check" type="checkbox" ${r.status !== 'Want to try' ? 'checked' : ''} onchange="toggleRestaurant('${r.id}', '${r.status}')">${esc(r.name)}</div></td>
       <td>${esc(r.cuisine || '')}</td>
       <td>${esc(r.location || '')}</td>
       <td>${esc(r.price_range || '')}</td>
@@ -447,10 +435,7 @@ async function renderCar() {
   const stClass = { 'Done': 'status-done', 'Overdue': 'priority-high', 'Pending': 'status-todo' };
   el.innerHTML = rows.map(c => `
     <tr class="${c.status === 'Done' ? 'done-row' : ''}">
-      <td style="display:flex;align-items:center;gap:8px">
-        <input class="check" type="checkbox" ${c.status === 'Done' ? 'checked' : ''} onchange="toggleCar('${c.id}', '${c.status}')">
-        ${esc(c.task)}
-      </td>
+      <td><div class="cell-check"><input class="check" type="checkbox" ${c.status === 'Done' ? 'checked' : ''} onchange="toggleCar('${c.id}', '${c.status}')">${esc(c.task)}</div></td>
       <td>${esc(c.car_type || '')}</td>
       <td>${c.service_date || ''}</td>
       <td>${c.mileage ? c.mileage.toLocaleString() + ' mi' : ''}</td>
@@ -492,10 +477,7 @@ async function renderVideos() {
   const stClass = { 'Done': 'status-done', 'Watching': 'status-progress', 'To watch': 'status-todo' };
   el.innerHTML = rows.map(vd => `
     <tr class="${vd.status === 'Done' ? 'done-row' : ''}">
-      <td style="display:flex;align-items:center;gap:8px">
-        <input class="check" type="checkbox" ${vd.status === 'Done' ? 'checked' : ''} onchange="toggleVideo('${vd.id}', '${vd.status}')">
-        ${esc(vd.title)}
-      </td>
+      <td><div class="cell-check"><input class="check" type="checkbox" ${vd.status === 'Done' ? 'checked' : ''} onchange="toggleVideo('${vd.id}', '${vd.status}')">${esc(vd.title)}</div></td>
       <td>${esc(vd.category || '')}</td>
       <td>${esc(vd.source || '')}</td>
       <td class="${stClass[vd.status] || ''}">${esc(vd.status || '')}</td>
