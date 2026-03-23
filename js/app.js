@@ -431,13 +431,19 @@ async function renderCar() {
 // ── VIDEOS ─────────────────────────────────────────────────────────────────
 async function addVideo() {
   const title = val('videos-title'); if (!title) return;
-  await dbInsert('videos', { title, source: val('videos-source'), status: val('videos-status') });
-  clr('videos-title', 'videos-source');
+  await dbInsert('videos', {
+    title,
+    category: val('videos-category'),
+    source:   val('videos-source'),
+    status:   val('videos-status')
+  });
+  v('videos-title').value  = '';
+  v('videos-source').value = '';
   await renderVideos();
 }
 
 async function toggleVideo(id, status) {
-  await dbUpdate('videos', id, { status: status === 'done' ? 'todo' : 'done' });
+  await dbUpdate('videos', id, { status: status === 'Done' ? 'To watch' : 'Done' });
   await renderVideos();
 }
 
@@ -446,14 +452,22 @@ async function deleteVideo(id) { await dbDelete('videos', id); await renderVideo
 async function renderVideos() {
   const rows = await dbSelect('videos', 'title');
   const el = v('videos-list');
-  if (!rows.length) { el.innerHTML = '<div class="empty">No videos yet</div>'; return; }
+  if (!rows.length) {
+    el.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--lb-200)">No videos yet</td></tr>`;
+    return;
+  }
+  const stClass = { 'Done': 'status-done', 'Watching': 'status-progress', 'To watch': 'status-todo' };
   el.innerHTML = rows.map(vd => `
-    <div class="item-row">
-      <input class="check" type="checkbox" ${vd.status === 'done' ? 'checked' : ''} onchange="toggleVideo('${vd.id}', '${vd.status}')">
-      <span class="item-text ${vd.status === 'done' ? 'done' : ''}">${esc(vd.title)}${vd.source ? ` <span style="font-size:11px;color:#adb5bd">${esc(vd.source)}</span>` : ''}</span>
-      ${badge(vd.status, vd.status === 'done' ? 'Watched' : vd.status === 'watching' ? 'Watching' : 'To watch')}
-      ${delBtn(`deleteVideo('${vd.id}')`)}
-    </div>`).join('');
+    <tr class="${vd.status === 'Done' ? 'done-row' : ''}">
+      <td style="display:flex;align-items:center;gap:8px">
+        <input class="check" type="checkbox" ${vd.status === 'Done' ? 'checked' : ''} onchange="toggleVideo('${vd.id}', '${vd.status}')">
+        ${esc(vd.title)}
+      </td>
+      <td>${esc(vd.category || '')}</td>
+      <td>${esc(vd.source || '')}</td>
+      <td class="${stClass[vd.status] || ''}">${esc(vd.status || '')}</td>
+      <td>${delBtn(`deleteVideo('${vd.id}')`)}</td>
+    </tr>`).join('');
 }
 
 // ── GROCERIES ──────────────────────────────────────────────────────────────
