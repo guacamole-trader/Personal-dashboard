@@ -86,6 +86,7 @@ function showDashboard() {
   document.getElementById('signup-screen').style.display = 'none';
   document.getElementById('dashboard').style.display     = 'block';
   document.getElementById('user-email-display').textContent = currentUser.email;
+  loadDailyMsg();
   loadSection(currentSection);
 }
 
@@ -182,16 +183,38 @@ async function addItem(sec) {
   }
 }
 
+// ── DAILY MESSAGE ──────────────────────────────────────────────────────────
+async function loadDailyMsg() {
+  const { data } = await db.from('daily_message').select('message').eq('user_id', uid()).single();
+  if (data) v('daily-msg').value = data.message || '';
+}
+
+async function saveDailyMsg() {
+  const message = v('daily-msg').value;
+  await db.from('daily_message').upsert({ user_id: uid(), message, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+}
+
 // ── TO-DO ──────────────────────────────────────────────────────────────────
 async function addTodo() {
-  const text = val('todo-in'); if (!text) return;
-  await dbInsert('todos', { text, priority: val('todo-pri'), done: false });
-  clr('todo-in');
+  const text = val('todo-task'); if (!text) return;
+  await dbInsert('todos', {
+    text,
+    priority:   val('todo-pri') || 'Medium',
+    category:   val('todo-cat'),
+    due_date:   v('todo-due').value || null,
+    status:     val('todo-status') || 'To do',
+    note:       val('todo-note'),
+    done: false
+  });
+  v('todo-task').value = '';
+  v('todo-cat').value  = '';
+  v('todo-due').value  = '';
+  v('todo-note').value = '';
   await renderTodo();
 }
 
 async function toggleTodo(id, done) {
-  await dbUpdate('todos', id, { done: !done });
+  await dbUpdate('todos', id, { done: !done, status: !done ? 'Done' : 'To do' });
   await renderTodo();
 }
 
@@ -201,17 +224,27 @@ async function deleteTodo(id) {
 }
 
 async function renderTodo() {
-  const rows = await dbSelect('todos');
+  const rows = await dbSelect('todos', 'created_at');
   const el = v('todo-list');
-  if (!rows.length) { el.innerHTML = '<div class="empty">No tasks yet</div>'; return; }
-  const pc = { high: '#A32D2D', normal: '#1a1a1a', low: '#adb5bd' };
+  if (!rows.length) {
+    el.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--lb-200)">No tasks yet</td></tr>`;
+    return;
+  }
+  const priClass = { 'High': 'priority-high', 'Medium': 'priority-medium', 'Low': 'priority-low' };
+  const stClass  = { 'Done': 'status-done', 'In progress': 'status-progress', 'To do': 'status-todo' };
   el.innerHTML = rows.map(t => `
-    <div class="item-row">
-      <input class="check" type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo('${t.id}', ${t.done})">
-      <span class="item-text ${t.done ? 'done' : ''}" style="color:${t.done ? '#adb5bd' : pc[t.priority] || '#1a1a1a'}">${esc(t.text)}</span>
-      <span class="item-meta">${t.priority === 'high' ? 'High' : t.priority === 'low' ? 'Low' : ''}</span>
-      ${delBtn(`deleteTodo('${t.id}')`)}
-    </div>`).join('');
+    <tr class="${t.done ? 'done-row' : ''}">
+      <td style="display:flex;align-items:center;gap:8px">
+        <input class="check" type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo('${t.id}', ${t.done})">
+        ${esc(t.text)}
+      </td>
+      <td class="${priClass[t.priority] || ''}">${esc(t.priority || '')}</td>
+      <td>${esc(t.category || '')}</td>
+      <td>${t.due_date || ''}</td>
+      <td class="${stClass[t.status] || ''}">${esc(t.status || '')}</td>
+      <td>${esc(t.note || '')}</td>
+      <td>${delBtn(`deleteTodo('${t.id}')`)}</td>
+    </tr>`).join('');
 }
 
 // ── BOOKS ──────────────────────────────────────────────────────────────────
