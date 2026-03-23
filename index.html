@@ -80,218 +80,307 @@
       </div>
 
       <div class="main-wrapper">
-
         <!-- DAILY MESSAGE BAR -->
         <div class="daily-bar">
           <textarea id="daily-msg" placeholder="Write your daily message here…" onblur="saveDailyMsg()" rows="1"></textarea>
         </div>
 
         <div class="main">
-        <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div></div>
+          <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div></div>
 
-        <!-- TO-DO -->
-        <div id="sec-todo" class="section active">
-          <div class="section-header"><span class="section-title">To-do list</span></div>
-          <div class="todo-table-wrap">
-            <table class="todo-table">
-              <thead>
-                <tr>
-                  <th>Task</th>
-                  <th>Priority</th>
-                  <th>Category</th>
-                  <th>Due date</th>
-                  <th>Status</th>
-                  <th>Note</th>
-                  <th></th>
-                </tr>
-                <tr class="add-row">
-                  <td><input id="todo-task" placeholder="Task…"></td>
-                  <td>
-                    <select id="todo-pri">
-                      <option value="High">High</option>
-                      <option value="Medium" selected>Medium</option>
-                      <option value="Low">Low</option>
-                    </select>
-                  </td>
-                  <td><input id="todo-cat" placeholder="Category…"></td>
-                  <td><input id="todo-due" type="date"></td>
-                  <td>
-                    <select id="todo-status">
-                      <option value="To do">To do</option>
-                      <option value="In progress">In progress</option>
-                      <option value="Done">Done</option>
-                    </select>
-                  </td>
-                  <td><input id="todo-note" placeholder="Note…"></td>
-                  <td><button class="add-btn" onclick="addItem('todo')">+ Add</button></td>
-                </tr>
-              </thead>
-              <tbody id="todo-list"></tbody>
-            </table>
+          <!-- TO-DO -->
+          <div id="sec-todo" class="section active">
+            <div class="section-header"><span class="section-title">To-do list</span></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table">
+                <thead>
+                  <tr><th>Task</th><th>Priority</th><th>Category</th><th>Due date</th><th>Status</th><th>Note</th><th></th></tr>
+                  <tr class="add-row">
+                    <td><input id="todo-task" placeholder="Task…"></td>
+                    <td><select id="todo-pri"><option value="High">High</option><option value="Medium" selected>Medium</option><option value="Low">Low</option></select></td>
+                    <td><input id="todo-cat" placeholder="Category…"></td>
+                    <td><input id="todo-due" type="date"></td>
+                    <td><select id="todo-status"><option value="To do">To do</option><option value="In progress">In progress</option><option value="Done">Done</option></select></td>
+                    <td><input id="todo-note" placeholder="Note…"></td>
+                    <td><button class="add-btn" onclick="addItem('todo')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="todo-list"></tbody>
+              </table>
+            </div>
           </div>
+
+          <!-- BOOKS -->
+          <div id="sec-books" class="section">
+            <div class="section-header"><span class="section-title">Books</span></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table">
+                <thead>
+                  <tr><th>Title</th><th>Author</th><th>Category</th><th>Status</th><th></th></tr>
+                  <tr class="add-row">
+                    <td><input id="books-title" placeholder="Title…"></td>
+                    <td><input id="books-author" placeholder="Author…"></td>
+                    <td>
+                      <select id="books-category">
+                        <option value="Health">Health</option>
+                        <option value="Personal Growth">Personal Growth</option>
+                        <option value="Music">Music</option>
+                        <option value="Business">Business</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Science">Science</option>
+                        <option value="History">History</option>
+                        <option value="Philosophy">Philosophy</option>
+                        <option value="Psychology">Psychology</option>
+                        <option value="Biography">Biography</option>
+                        <option value="Fiction">Fiction</option>
+                        <option value="Self-Help">Self-Help</option>
+                        <option value="Spirituality">Spirituality</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </td>
+                    <td><select id="books-status"><option value="Want to read">Want to read</option><option value="Reading">Reading</option><option value="Read">Read</option></select></td>
+                    <td><button class="add-btn" onclick="addItem('books')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="books-list"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TRAVEL -->
+          <div id="sec-travel" class="section">
+            <div class="section-header"><span class="section-title">Travel</span></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table">
+                <thead>
+                  <tr><th>City / Destination</th><th>Country</th><th>Continent</th><th>Type</th><th>Status</th><th>Notes</th><th></th></tr>
+                  <tr class="add-row">
+                    <td><input id="travel-city" placeholder="City or destination…"></td>
+                    <td><input id="travel-country" placeholder="Country…"></td>
+                    <td>
+                      <select id="travel-continent">
+                        <option value="North America">North America</option>
+                        <option value="South America">South America</option>
+                        <option value="Europe">Europe</option>
+                        <option value="Asia">Asia</option>
+                        <option value="Africa">Africa</option>
+                        <option value="Oceania">Oceania</option>
+                        <option value="Middle East">Middle East</option>
+                        <option value="Caribbean">Caribbean</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select id="travel-type">
+                        <option value="Beach">Beach</option>
+                        <option value="City">City</option>
+                        <option value="Adventure">Adventure</option>
+                        <option value="Cultural">Cultural</option>
+                        <option value="Nature">Nature</option>
+                        <option value="Road trip">Road trip</option>
+                        <option value="Cruise">Cruise</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </td>
+                    <td><select id="travel-status"><option value="Wish list">Wish list</option><option value="Planned">Planned</option><option value="Visited">Visited</option></select></td>
+                    <td><input id="travel-notes" placeholder="Notes…"></td>
+                    <td><button class="add-btn" onclick="addItem('travel')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="travel-list"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SUBSCRIPTIONS -->
+          <div id="sec-subs" class="section">
+            <div class="section-header"><span class="section-title">Subscriptions</span></div>
+            <div class="add-form">
+              <input id="subs-name" placeholder="Service name…">
+              <input id="subs-cost" placeholder="$/mo" type="number" min="0" step="0.01" style="max-width:90px">
+              <select id="subs-status"><option value="active">Active</option><option value="paused">Paused</option></select>
+              <button class="add-btn" onclick="addItem('subs')">+ Add</button>
+            </div>
+            <div id="subs-total" class="meta-info"></div>
+            <div class="item-list" id="subs-list"></div>
+          </div>
+
+          <!-- RESTAURANTS -->
+          <div id="sec-restaurants" class="section">
+            <div class="section-header"><span class="section-title">Restaurants</span></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table">
+                <thead>
+                  <tr><th>Name</th><th>Cuisine</th><th>Location</th><th>Price</th><th>Status</th><th>Notes</th><th></th></tr>
+                  <tr class="add-row">
+                    <td><input id="restaurants-name" placeholder="Restaurant name…"></td>
+                    <td>
+                      <select id="restaurants-cuisine">
+                        <option value="American">American</option>
+                        <option value="Italian">Italian</option>
+                        <option value="Mexican">Mexican</option>
+                        <option value="Japanese">Japanese</option>
+                        <option value="Chinese">Chinese</option>
+                        <option value="Thai">Thai</option>
+                        <option value="Indian">Indian</option>
+                        <option value="Mediterranean">Mediterranean</option>
+                        <option value="French">French</option>
+                        <option value="Greek">Greek</option>
+                        <option value="Spanish">Spanish</option>
+                        <option value="Korean">Korean</option>
+                        <option value="Vietnamese">Vietnamese</option>
+                        <option value="BBQ">BBQ</option>
+                        <option value="Seafood">Seafood</option>
+                        <option value="Steakhouse">Steakhouse</option>
+                        <option value="Vegan">Vegan</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </td>
+                    <td><input id="restaurants-location" placeholder="City…"></td>
+                    <td>
+                      <select id="restaurants-price">
+                        <option value="$">$ Budget</option>
+                        <option value="$$">$$ Mid-range</option>
+                        <option value="$$$">$$$ Upscale</option>
+                        <option value="$$$$">$$$$ Fine dining</option>
+                      </select>
+                    </td>
+                    <td><select id="restaurants-status"><option value="Want to try">Want to try</option><option value="Tried">Tried</option><option value="Favorite">Favorite</option></select></td>
+                    <td><input id="restaurants-notes" placeholder="Notes…"></td>
+                    <td><button class="add-btn" onclick="addItem('restaurants')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="restaurants-list"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- BUDGET -->
+          <div id="sec-budget" class="section">
+            <div class="section-header"><span class="section-title">Budget</span></div>
+            <div class="budget-grid">
+              <div class="budget-card"><div class="budget-lbl">Monthly income</div><div class="budget-val income" id="b-income">$0.00</div></div>
+              <div class="budget-card"><div class="budget-lbl">Total expenses</div><div class="budget-val expense" id="b-expense">$0.00</div></div>
+              <div class="budget-card"><div class="budget-lbl">Balance</div><div class="budget-val balance" id="b-balance">$0.00</div></div>
+              <div class="budget-card"><div class="budget-lbl">Spent vs income</div><div class="progress-bar"><div class="progress-fill" id="b-bar" style="width:0%"></div></div><div class="meta-info" id="b-pct" style="margin-top:4px">0%</div></div>
+            </div>
+            <div class="add-form">
+              <input id="budget-label" placeholder="Description…">
+              <input id="budget-amount" placeholder="Amount" type="number" min="0" step="0.01" style="max-width:110px">
+              <select id="budget-type"><option value="expense">Expense</option><option value="income">Income</option></select>
+              <input id="budget-category" placeholder="Category">
+              <button class="add-btn" onclick="addItem('budget')">+ Add</button>
+            </div>
+            <div class="item-list" id="budget-list"></div>
+          </div>
+
+          <!-- CAR -->
+          <div id="sec-car" class="section">
+            <div class="section-header"><span class="section-title">Car maintenance</span></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table">
+                <thead>
+                  <tr><th>Task</th><th>Type</th><th>Date</th><th>Mileage</th><th>Cost</th><th>Status</th><th>Notes</th><th></th></tr>
+                  <tr class="add-row">
+                    <td><input id="car-task" placeholder="e.g. Oil change…"></td>
+                    <td>
+                      <select id="car-type">
+                        <option value="Oil change">Oil change</option>
+                        <option value="Tire rotation">Tire rotation</option>
+                        <option value="Tire replacement">Tire replacement</option>
+                        <option value="Brake service">Brake service</option>
+                        <option value="Battery">Battery</option>
+                        <option value="Air filter">Air filter</option>
+                        <option value="Alignment">Alignment</option>
+                        <option value="Transmission">Transmission</option>
+                        <option value="Inspection">Inspection</option>
+                        <option value="Coolant flush">Coolant flush</option>
+                        <option value="Windshield">Windshield</option>
+                        <option value="AC service">AC service</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </td>
+                    <td><input id="car-date" type="date"></td>
+                    <td><input id="car-miles" placeholder="Miles" type="number"></td>
+                    <td><input id="car-cost" placeholder="$" type="number" step="0.01"></td>
+                    <td><select id="car-status"><option value="Pending">Pending</option><option value="Done">Done</option><option value="Overdue">Overdue</option></select></td>
+                    <td><input id="car-notes" placeholder="Notes…"></td>
+                    <td><button class="add-btn" onclick="addItem('car')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="car-list"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- VIDEOS -->
+          <div id="sec-videos" class="section">
+            <div class="section-header"><span class="section-title">Videos to watch</span></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table">
+                <thead>
+                  <tr><th>Title</th><th>Category</th><th>Source</th><th>Status</th><th></th></tr>
+                  <tr class="add-row">
+                    <td><input id="videos-title" placeholder="Title…"></td>
+                    <td>
+                      <select id="videos-category">
+                        <option value="Health">Health</option>
+                        <option value="Personal Growth">Personal Growth</option>
+                        <option value="Music">Music</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Science">Science</option>
+                        <option value="Finance">Finance</option>
+                        <option value="History">History</option>
+                        <option value="Comedy">Comedy</option>
+                        <option value="Motivation">Motivation</option>
+                        <option value="Cooking">Cooking</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Documentary">Documentary</option>
+                        <option value="Education">Education</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </td>
+                    <td><input id="videos-source" placeholder="YouTube, Netflix…"></td>
+                    <td><select id="videos-status"><option value="To watch">To watch</option><option value="Watching">Watching</option><option value="Done">Done</option></select></td>
+                    <td><button class="add-btn" onclick="addItem('videos')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="videos-list"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- GROCERIES -->
+          <div id="sec-groceries" class="section">
+            <div class="section-header"><span class="section-title">Groceries</span></div>
+            <div class="add-form">
+              <input id="groceries-item" placeholder="Item…">
+              <input id="groceries-qty" placeholder="Qty" style="max-width:80px">
+              <select id="groceries-status"><option value="need">Need to buy</option><option value="bought">Bought</option></select>
+              <button class="add-btn" onclick="addItem('groceries')">+ Add</button>
+            </div>
+            <div class="add-form" style="margin-top:-4px">
+              <button class="add-btn" onclick="clearBought()">Clear bought items</button>
+            </div>
+            <div class="item-list" id="groceries-list"></div>
+          </div>
+
+          <!-- WORKOUT -->
+          <div id="sec-workout" class="section">
+            <div class="section-header"><span class="section-title">Workout log</span></div>
+            <div class="add-form">
+              <input id="workout-type" placeholder="Activity (e.g. Run, Gym)…">
+              <input id="workout-date" type="date">
+              <input id="workout-duration" placeholder="Duration (min)" type="number" style="max-width:120px">
+              <input id="workout-notes" placeholder="Notes (optional)">
+              <button class="add-btn" onclick="addItem('workout')">+ Log</button>
+            </div>
+            <div id="workout-stats" class="stats-row"></div>
+            <div class="workout-grid" id="workout-list"></div>
+          </div>
+
         </div>
-
-        <!-- BOOKS -->
-        <div id="sec-books" class="section">
-          <div class="section-header"><span class="section-title">Books</span></div>
-          <div class="add-form">
-            <input id="books-title" placeholder="Title…">
-            <input id="books-author" placeholder="Author (optional)">
-            <select id="books-status"><option value="unread">Want to read</option><option value="read">Already read</option></select>
-            <button class="add-btn" onclick="addItem('books')">+ Add</button>
-          </div>
-          <div class="item-list" id="books-list"></div>
-        </div>
-
-        <!-- TRAVEL -->
-        <div id="sec-travel" class="section">
-          <div class="section-header"><span class="section-title">Travel</span></div>
-          <div class="add-form">
-            <input id="travel-city" placeholder="City / destination…">
-            <input id="travel-country" placeholder="Country (optional)">
-            <select id="travel-status"><option value="wish">Wish list</option><option value="visited">Visited</option></select>
-            <button class="add-btn" onclick="addItem('travel')">+ Add</button>
-          </div>
-          <div class="item-list" id="travel-list"></div>
-        </div>
-
-        <!-- SUBSCRIPTIONS -->
-        <div id="sec-subs" class="section">
-          <div class="section-header"><span class="section-title">Subscriptions</span></div>
-          <div class="add-form">
-            <input id="subs-name" placeholder="Service name…">
-            <input id="subs-cost" placeholder="$/mo" type="number" min="0" step="0.01" style="max-width:90px">
-            <select id="subs-status"><option value="active">Active</option><option value="paused">Paused</option></select>
-            <button class="add-btn" onclick="addItem('subs')">+ Add</button>
-          </div>
-          <div id="subs-total" class="meta-info"></div>
-          <div class="item-list" id="subs-list"></div>
-        </div>
-
-        <!-- RESTAURANTS -->
-        <div id="sec-restaurants" class="section">
-          <div class="section-header"><span class="section-title">Restaurants</span></div>
-          <div class="add-form">
-            <input id="restaurants-name" placeholder="Restaurant name…">
-            <input id="restaurants-cuisine" placeholder="Cuisine (optional)">
-            <select id="restaurants-status"><option value="want">Want to try</option><option value="tried">Tried it</option></select>
-            <button class="add-btn" onclick="addItem('restaurants')">+ Add</button>
-          </div>
-          <div class="item-list" id="restaurants-list"></div>
-        </div>
-
-        <!-- BUDGET -->
-        <div id="sec-budget" class="section">
-          <div class="section-header"><span class="section-title">Budget</span></div>
-          <div class="budget-grid">
-            <div class="budget-card"><div class="budget-lbl">Monthly income</div><div class="budget-val income" id="b-income">$0.00</div></div>
-            <div class="budget-card"><div class="budget-lbl">Total expenses</div><div class="budget-val expense" id="b-expense">$0.00</div></div>
-            <div class="budget-card"><div class="budget-lbl">Balance</div><div class="budget-val balance" id="b-balance">$0.00</div></div>
-            <div class="budget-card"><div class="budget-lbl">Spent vs income</div><div class="progress-bar"><div class="progress-fill" id="b-bar" style="width:0%"></div></div><div class="meta-info" id="b-pct" style="margin-top:4px">0%</div></div>
-          </div>
-          <div class="add-form">
-            <input id="budget-label" placeholder="Description…">
-            <input id="budget-amount" placeholder="Amount" type="number" min="0" step="0.01" style="max-width:110px">
-            <select id="budget-type"><option value="expense">Expense</option><option value="income">Income</option></select>
-            <input id="budget-category" placeholder="Category">
-            <button class="add-btn" onclick="addItem('budget')">+ Add</button>
-          </div>
-          <div class="item-list" id="budget-list"></div>
-        </div>
-
-        <!-- CAR -->
-        <div id="sec-car" class="section">
-          <div class="section-header"><span class="section-title">Car maintenance</span></div>
-          <div class="add-form">
-            <input id="car-task" placeholder="Task (e.g. Oil change)…">
-            <input id="car-date" type="date">
-            <input id="car-miles" placeholder="Mileage" type="number" style="max-width:110px">
-            <select id="car-status"><option value="pending">Pending</option><option value="done">Done</option><option value="overdue">Overdue</option></select>
-            <button class="add-btn" onclick="addItem('car')">+ Add</button>
-          </div>
-          <div class="item-list" id="car-list"></div>
-        </div>
-
-        <!-- VIDEOS -->
-        <div id="sec-videos" class="section">
-          <div class="section-header"><span class="section-title">Videos to watch</span></div>
-          <div class="todo-table-wrap">
-            <table class="todo-table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Category</th>
-                  <th>Source</th>
-                  <th>Status</th>
-                  <th></th>
-                </tr>
-                <tr class="add-row">
-                  <td><input id="videos-title" placeholder="Title…"></td>
-                  <td>
-                    <select id="videos-category">
-                      <option value="Health">Health</option>
-                      <option value="Personal Growth">Personal Growth</option>
-                      <option value="Music">Music</option>
-                      <option value="Technology">Technology</option>
-                      <option value="Science">Science</option>
-                      <option value="Finance">Finance</option>
-                      <option value="History">History</option>
-                      <option value="Comedy">Comedy</option>
-                      <option value="Motivation">Motivation</option>
-                      <option value="Cooking">Cooking</option>
-                      <option value="Travel">Travel</option>
-                      <option value="Sports">Sports</option>
-                      <option value="Documentary">Documentary</option>
-                      <option value="Education">Education</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </td>
-                  <td><input id="videos-source" placeholder="YouTube, Netflix…"></td>
-                  <td>
-                    <select id="videos-status">
-                      <option value="To watch">To watch</option>
-                      <option value="Watching">Watching</option>
-                      <option value="Done">Done</option>
-                    </select>
-                  </td>
-                  <td><button class="add-btn" onclick="addItem('videos')">+ Add</button></td>
-                </tr>
-              </thead>
-              <tbody id="videos-list"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- GROCERIES -->
-        <div id="sec-groceries" class="section">
-          <div class="section-header"><span class="section-title">Groceries</span></div>
-          <div class="add-form">
-            <input id="groceries-item" placeholder="Item…">
-            <input id="groceries-qty" placeholder="Qty" style="max-width:80px">
-            <select id="groceries-status"><option value="need">Need to buy</option><option value="bought">Bought</option></select>
-            <button class="add-btn" onclick="addItem('groceries')">+ Add</button>
-          </div>
-          <div class="add-form" style="margin-top:-4px">
-            <button class="add-btn" onclick="clearBought()">Clear bought items</button>
-          </div>
-          <div class="item-list" id="groceries-list"></div>
-        </div>
-
-        <!-- WORKOUT -->
-        <div id="sec-workout" class="section">
-          <div class="section-header"><span class="section-title">Workout log</span></div>
-          <div class="add-form">
-            <input id="workout-type" placeholder="Activity (e.g. Run, Gym)…">
-            <input id="workout-date" type="date">
-            <input id="workout-duration" placeholder="Duration (min)" type="number" style="max-width:120px">
-            <input id="workout-notes" placeholder="Notes (optional)">
-            <button class="add-btn" onclick="addItem('workout')">+ Log</button>
-          </div>
-          <div id="workout-stats" class="stats-row"></div>
-          <div class="workout-grid" id="workout-list"></div>
-        </div>
-
-      </div>
       </div><!-- end main-wrapper -->
     </div>
   </div>
