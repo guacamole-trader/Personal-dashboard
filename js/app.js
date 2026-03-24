@@ -20,9 +20,7 @@ function mobNavSync(sec) {
   renderMobCards(sec);
 }
 function mobShowExtras() {
-  const gr = document.getElementById('mob-greeting');
-  if (gr) gr.textContent = (document.getElementById('topbar-greeting')||{textContent:''}).textContent;
-  syncMobDailyMsg();
+  setGreeting();
   renderMobCards(currentSection);
 }
 
@@ -66,7 +64,8 @@ function showDashboard() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('signup-screen').style.display='none';
   document.getElementById('dashboard').style.display='block';
-  document.getElementById('user-email-display').textContent = currentUser.email;
+  const emailEl = document.getElementById('user-email-display');
+  if (emailEl) emailEl.textContent = currentUser.email;
   setGreeting(); setDate(); loadDailyMsg(); loadSection(currentSection); loadAllBadges();
   if (isMobile()) mobShowExtras();
 }
@@ -77,22 +76,31 @@ function showDashboard() {
 })();
 
 // ── GREETING & DATE ───────────────────────────────────────────────────────
-function setGreeting() {
+function getGreetingText() {
   const h = new Date().getHours();
   const g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
   const name = currentUser.email.split('@')[0];
-  document.getElementById('topbar-greeting').textContent = `${g}, ${name} 👋`;
+  return `${g}, ${name} 👋`;
+}
+function setGreeting() {
+  const el = document.getElementById('topbar-greeting');
+  if (el) el.textContent = getGreetingText();
+  const mob = document.getElementById('mob-greeting');
+  if (mob) mob.textContent = getGreetingText();
 }
 function setDate() {
   const d = new Date();
-  document.getElementById('topbar-date').textContent = d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const str = d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const el = document.getElementById('topbar-date');
+  if (el) el.textContent = str;
 }
 
 // ── DARK MODE ─────────────────────────────────────────────────────────────
 function toggleDark() {
   document.body.classList.toggle('dark');
   const isDark = document.body.classList.contains('dark');
-  document.getElementById('dark-label').textContent = isDark ? '☀️' : '🌙';
+  const lbl = document.getElementById('dark-label');
+  if (lbl) lbl.textContent = isDark ? '☀️' : '🌙';
   localStorage.setItem('dash-dark', isDark ? '1' : '0');
   syncMobDarkBtn();
 }
@@ -101,6 +109,7 @@ if (localStorage.getItem('dash-dark') === '1') {
   document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById('dark-label');
     if (el) el.textContent = '☀️';
+    syncMobDarkBtn();
   });
 }
 
@@ -121,7 +130,10 @@ function nav(sec) {
 }
 
 // ── LOADING ───────────────────────────────────────────────────────────────
-function setLoading(on) { document.getElementById('loading-overlay').classList.toggle('visible', on); }
+function setLoading(on) {
+  const el = document.getElementById('loading-overlay');
+  if (el) el.classList.toggle('visible', on);
+}
 
 // ── HELPERS ───────────────────────────────────────────────────────────────
 function v(id) { return document.getElementById(id); }
@@ -176,11 +188,18 @@ function updateBadge(sec, rows) {
 
 // ── DAILY MESSAGE ─────────────────────────────────────────────────────────
 async function loadDailyMsg() {
-  const { data } = await db.from('daily_message').select('message').eq('user_id',uid()).single();
-  if (data) v('daily-msg').value = data.message || '';
+  try {
+    const { data } = await db.from('daily_message').select('message').eq('user_id',uid()).single();
+    const msg = data ? (data.message || '') : '';
+    const desk = document.getElementById('daily-msg');
+    const mob  = document.getElementById('mob-daily-msg');
+    if (desk) desk.value = msg;
+    if (mob)  mob.value  = msg;
+  } catch(e) {}
 }
 async function saveDailyMsg() {
-  const message = v('daily-msg').value;
+  const desk = document.getElementById('daily-msg');
+  const message = desk ? desk.value : '';
   await db.from('daily_message').upsert({ user_id:uid(), message, updated_at:new Date().toISOString() }, { onConflict:'user_id' });
 }
 
@@ -602,11 +621,7 @@ async function renderWorkout() {
 //  MOBILE LAYER
 // ══════════════════════════════════════════════════════════════
 
-async function syncMobDailyMsg() {
-  const { data } = await db.from('daily_message').select('message').eq('user_id', uid()).single();
-  const el = document.getElementById('mob-daily-msg');
-  if (el && data) el.value = data.message || '';
-}
+// ── MOBILE LAYER ──────────────────────────────────────────────
 async function saveMobDailyMsg() {
   const message = (document.getElementById('mob-daily-msg')||{value:''}).value;
   await db.from('daily_message').upsert({ user_id: uid(), message, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
