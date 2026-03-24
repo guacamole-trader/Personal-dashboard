@@ -6,6 +6,26 @@ let currentSection = 'todo';
 let sortState = {};
 let cachedRows = {};
 
+// ── MOBILE HELPERS (defined first so they are available everywhere) ────────
+function isMobile() { return window.innerWidth <= 768; }
+function syncMobDarkBtn() {
+  const isDark = document.body.classList.contains('dark');
+  const btn = document.getElementById('mob-dark-btn');
+  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+}
+function mobNavSync(sec) {
+  document.querySelectorAll('.mob-nav-item').forEach(n => n.classList.remove('active'));
+  const mobItem = document.querySelector(`.mob-nav-item[onclick="nav('${sec}')"]`);
+  if (mobItem) mobItem.classList.add('active');
+  renderMobCards(sec);
+}
+function mobShowExtras() {
+  const gr = document.getElementById('mob-greeting');
+  if (gr) gr.textContent = (document.getElementById('topbar-greeting')||{textContent:''}).textContent;
+  syncMobDailyMsg();
+  renderMobCards(currentSection);
+}
+
 // ── AUTH ──────────────────────────────────────────────────────────────────
 async function handleLogin() {
   const email = document.getElementById('login-email').value.trim();
@@ -582,24 +602,6 @@ async function renderWorkout() {
 //  MOBILE LAYER
 // ══════════════════════════════════════════════════════════════
 
-function isMobile() { return window.innerWidth <= 768; }
-
-// ── MOBILE NAV SYNC ───────────────────────────────────────────
-function mobNavSync(sec) {
-  document.querySelectorAll('.mob-nav-item').forEach(n => n.classList.remove('active'));
-  const mobItem = document.querySelector(`.mob-nav-item[onclick="nav('${sec}')"]`);
-  if (mobItem) mobItem.classList.add('active');
-  renderMobCards(sec);
-}
-
-// ── MOBILE SHOW DASHBOARD ─────────────────────────────────────
-function mobShowExtras() {
-  const gr = document.getElementById('mob-greeting');
-  if (gr) gr.textContent = document.getElementById('topbar-greeting').textContent;
-  syncMobDailyMsg();
-  renderMobCards(currentSection);
-}
-
 async function syncMobDailyMsg() {
   const { data } = await db.from('daily_message').select('message').eq('user_id', uid()).single();
   const el = document.getElementById('mob-daily-msg');
@@ -610,12 +612,7 @@ async function saveMobDailyMsg() {
   await db.from('daily_message').upsert({ user_id: uid(), message, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
 }
 
-// ── DARK MODE SYNC ────────────────────────────────────────────
-function syncMobDarkBtn() {
-  const isDark = document.body.classList.contains('dark');
-  const btn = document.getElementById('mob-dark-btn');
-  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
-}
+// ── DARK MODE SYNC (defined at top of file) ───────────────────
 
 // ── RENDER MOBILE CARDS ───────────────────────────────────────
 async function renderMobCards(sec) {
