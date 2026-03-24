@@ -235,6 +235,22 @@ body.dark .dark-knob { transform: translateX(16px); }
 .workout-type { font-weight: 500; color: var(--lb-900); margin-bottom: 2px; font-size: 13px; }
 .workout-detail { font-size: 12px; color: var(--lb-600); }
 
+/* ── DRAG TO REORDER ── */
+.drag-handle {
+  width: 18px;
+  text-align: center;
+  color: var(--lb-200);
+  cursor: grab;
+  font-size: 12px;
+  padding: 8px 4px !important;
+  user-select: none;
+  letter-spacing: -2px;
+}
+.drag-handle:hover { color: var(--lb-400); }
+.drag-handle:active { cursor: grabbing; }
+.drag-ghost { opacity: 0.4; background: var(--lb-100) !important; }
+.drag-chosen { background: var(--lb-50) !important; box-shadow: 0 2px 8px rgba(55,138,221,0.2); }
+
 /* ── LOADING ── */
 .loading-overlay { display: none; position: absolute; top:0;left:0;right:0;bottom:0; background: rgba(255,255,255,0.7); align-items: center; justify-content: center; z-index: 10; }
 .loading-overlay.visible { display: flex; }
