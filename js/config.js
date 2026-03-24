@@ -7,5 +7,5 @@
 //  → Settings → API
 // ─────────────────────────────────────────────
 
-const SUPABASE_URL  = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_ANON = 'YOUR_ANON_PUBLIC_KEY';
+const SUPABASE_URL  = 'https://eclelgphgrovxcjmfnzk.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_O8qxcB6ePC22dA6kUGBtxw_MXuf3Bou';
