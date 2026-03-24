@@ -38,6 +38,34 @@
 
   <!-- DASHBOARD -->
   <div id="dashboard" style="display:none">
+
+    <!-- MOBILE HEADER (hidden on desktop) -->
+    <div class="mob-header">
+      <span class="mob-header-title">My Dashboard</span>
+      <div class="mob-header-right">
+        <button class="mob-dark-btn" onclick="toggleDark()" id="mob-dark-btn">🌙</button>
+      </div>
+    </div>
+    <div class="mob-greeting" id="mob-greeting"></div>
+    <div class="mob-daily">
+      <textarea id="mob-daily-msg" placeholder="Write your daily message here…" onblur="saveMobDailyMsg()" rows="1"></textarea>
+    </div>
+
+    <!-- MOBILE ADD MODAL -->
+    <div class="mob-modal-overlay" id="mob-modal-overlay" onclick="closeMobModal(event)">
+      <div class="mob-modal" id="mob-modal">
+        <div class="mob-modal-header">
+          <span class="mob-modal-title" id="mob-modal-title">Add item</span>
+          <button class="mob-modal-close" onclick="closeMobModal()">×</button>
+        </div>
+        <div id="mob-modal-body"></div>
+        <button class="mob-submit" id="mob-modal-submit">Add</button>
+      </div>
+    </div>
+
+    <!-- FLOATING ADD BUTTON -->
+    <button class="mob-fab" onclick="openMobModal()">+</button>
+
     <div class="dash">
 
       <!-- SIDEBAR -->
@@ -124,6 +152,7 @@
                 <tbody id="todo-list"></tbody>
               </table>
             </div>
+            <div class="mob-cards" id="mob-todo-cards"></div>
           </div>
 
           <!-- BOOKS -->
@@ -159,6 +188,9 @@
             </div>
           </div>
 
+          <div class="mob-cards" id="mob-books-cards"></div>
+          </div>
+
           <!-- VIDEOS -->
           <div id="sec-videos" class="section">
             <div class="section-header">
@@ -190,6 +222,9 @@
                 <tbody id="videos-list"></tbody>
               </table>
             </div>
+          </div>
+
+          <div class="mob-cards" id="mob-videos-cards"></div>
           </div>
 
           <!-- RESTAURANTS -->
@@ -231,6 +266,9 @@
             </div>
           </div>
 
+          <div class="mob-cards" id="mob-restaurants-cards"></div>
+          </div>
+
           <!-- TRAVEL -->
           <div id="sec-travel" class="section">
             <div class="section-header">
@@ -268,6 +306,9 @@
             </div>
           </div>
 
+          <div class="mob-cards" id="mob-travel-cards"></div>
+          </div>
+
           <!-- GROCERIES -->
           <div id="sec-groceries" class="section">
             <div class="section-header">
@@ -300,6 +341,9 @@
             </div>
           </div>
 
+          <div class="mob-cards" id="mob-groceries-cards"></div>
+          </div>
+
           <!-- SUBSCRIPTIONS -->
           <div id="sec-subs" class="section">
             <div class="section-header">
@@ -329,6 +373,9 @@
                 <tbody id="subs-list"></tbody>
               </table>
             </div>
+          </div>
+
+          <div class="mob-cards" id="mob-subs-cards"></div>
           </div>
 
           <!-- BUDGET -->
@@ -371,6 +418,9 @@
             </div>
           </div>
 
+          <div class="mob-cards" id="mob-budget-cards"></div>
+          </div>
+
           <!-- CAR -->
           <div id="sec-car" class="section">
             <div class="section-header">
@@ -410,6 +460,9 @@
             </div>
           </div>
 
+          <div class="mob-cards" id="mob-car-cards"></div>
+          </div>
+
           <!-- WORKOUT -->
           <div id="sec-workout" class="section">
             <div class="section-header">
@@ -427,11 +480,27 @@
             </div>
             <div id="workout-stats" class="stats-row"></div>
             <div class="workout-grid" id="workout-list"></div>
+          <div class="mob-cards" id="mob-workout-cards"></div>
           </div>
 
         </div><!-- end main -->
       </div><!-- end main-wrapper -->
     </div><!-- end dash -->
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="mob-nav" id="mob-nav">
+      <div class="mob-nav-item active" onclick="nav('todo')"><span class="mob-nav-icon">✓</span><span class="mob-nav-label">To-do</span></div>
+      <div class="mob-nav-item" onclick="nav('books')"><span class="mob-nav-icon">📖</span><span class="mob-nav-label">Books</span></div>
+      <div class="mob-nav-item" onclick="nav('videos')"><span class="mob-nav-icon">▶</span><span class="mob-nav-label">Videos</span></div>
+      <div class="mob-nav-item" onclick="nav('restaurants')"><span class="mob-nav-icon">🍽</span><span class="mob-nav-label">Restaurants</span></div>
+      <div class="mob-nav-item" onclick="nav('travel')"><span class="mob-nav-icon">✈</span><span class="mob-nav-label">Travel</span></div>
+      <div class="mob-nav-item" onclick="nav('groceries')"><span class="mob-nav-icon">🛒</span><span class="mob-nav-label">Groceries</span></div>
+      <div class="mob-nav-item" onclick="nav('subs')"><span class="mob-nav-icon">♻</span><span class="mob-nav-label">Subs</span></div>
+      <div class="mob-nav-item" onclick="nav('budget')"><span class="mob-nav-icon">$</span><span class="mob-nav-label">Budget</span></div>
+      <div class="mob-nav-item" onclick="nav('car')"><span class="mob-nav-icon">🚗</span><span class="mob-nav-label">Car</span></div>
+      <div class="mob-nav-item" onclick="nav('workout')"><span class="mob-nav-icon">💪</span><span class="mob-nav-label">Workout</span></div>
+    </nav>
+
   </div><!-- end dashboard -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
