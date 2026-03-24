@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Dashboard</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo"><div class="logo-circle"></div><span>My Dashboard</span></div>
+      <h1>Welcome back</h1>
+      <p class="login-sub">Sign in to your personal space</p>
+      <div id="login-error" class="error-msg" style="display:none"></div>
+      <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="field"><label>Password</label><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/></div>
+      <button class="btn-primary" id="login-btn" onclick="handleLogin()">Sign in</button>
+      <p class="login-footer">Don't have an account? <a href="#" onclick="showSignup()">Sign up</a></p>
+    </div>
+  </div>
+
+  <!-- SIGNUP -->
+  <div id="signup-screen" style="display:none">
+    <div class="login-card">
+      <div class="login-logo"><div class="logo-circle"></div><span>My Dashboard</span></div>
+      <h1>Create account</h1>
+      <p class="login-sub">Start organizing your life</p>
+      <div id="signup-error" class="error-msg" style="display:none"></div>
+      <div class="field"><label>Email</label><input type="email" id="signup-email" placeholder="you@example.com"/></div>
+      <div class="field"><label>Password</label><input type="password" id="signup-password" placeholder="Min 6 characters"/></div>
+      <button class="btn-primary" id="signup-btn" onclick="handleSignup()">Create account</button>
+      <p class="login-footer">Already have an account? <a href="#" onclick="showLogin()">Sign in</a></p>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" style="display:none">
+
+    <!-- MOBILE HEADER (hidden on desktop) -->
+    <div class="mob-header">
+      <span class="mob-header-title">My Dashboard</span>
+      <div class="mob-header-right">
+        <button class="mob-dark-btn" onclick="toggleDark()" id="mob-dark-btn">🌙</button>
+      </div>
+    </div>
+    <div class="mob-greeting" id="mob-greeting"></div>
+    <div class="mob-daily">
+      <textarea id="mob-daily-msg" placeholder="Write your daily message here…" onblur="saveMobDailyMsg()" rows="1"></textarea>
+    </div>
+
+    <!-- MOBILE ADD MODAL -->
+    <div class="mob-modal-overlay" id="mob-modal-overlay" onclick="closeMobModal(event)">
+      <div class="mob-modal" id="mob-modal">
+        <div class="mob-modal-header">
+          <span class="mob-modal-title" id="mob-modal-title">Add item</span>
+          <button class="mob-modal-close" onclick="closeMobModal()">×</button>
+        </div>
+        <div id="mob-modal-body"></div>
+        <button class="mob-submit" id="mob-modal-submit">Add</button>
+      </div>
+    </div>
+
+    <!-- FLOATING ADD BUTTON -->
+    <button class="mob-fab" onclick="openMobModal()">+</button>
+
+    <div class="dash">
+
+      <!-- SIDEBAR -->
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-accent"></div>
+        <div class="sidebar-brand">
+          <div class="sidebar-dot"></div>
+          <span class="sidebar-name">My Dashboard</span>
+          <button class="collapse-btn" onclick="toggleSidebar()" title="Collapse sidebar">&#8249;</button>
+        </div>
+        <div class="nav-label">Sections</div>
+        <nav>
+          <div class="nav-item active" onclick="nav('todo')"><span class="nav-icon">✓</span><span class="nav-text">To-do list</span><span class="nav-badge" id="badge-todo"></span></div>
+          <div class="nav-item" onclick="nav('books')"><span class="nav-icon">📖</span><span class="nav-text">Books</span><span class="nav-badge" id="badge-books"></span></div>
+          <div class="nav-item" onclick="nav('videos')"><span class="nav-icon">▶</span><span class="nav-text">Videos</span><span class="nav-badge" id="badge-videos"></span></div>
+          <div class="nav-item" onclick="nav('restaurants')"><span class="nav-icon">🍽</span><span class="nav-text">Restaurants</span><span class="nav-badge" id="badge-restaurants"></span></div>
+          <div class="nav-item" onclick="nav('travel')"><span class="nav-icon">✈</span><span class="nav-text">Travel</span><span class="nav-badge" id="badge-travel"></span></div>
+          <div class="nav-item" onclick="nav('groceries')"><span class="nav-icon">🛒</span><span class="nav-text">Groceries</span><span class="nav-badge" id="badge-groceries"></span></div>
+          <div class="nav-item" onclick="nav('subs')"><span class="nav-icon">♻</span><span class="nav-text">Subscriptions</span><span class="nav-badge" id="badge-subs"></span></div>
+          <div class="nav-item" onclick="nav('budget')"><span class="nav-icon">$</span><span class="nav-text">Budget</span><span class="nav-badge" id="badge-budget"></span></div>
+          <div class="nav-item" onclick="nav('car')"><span class="nav-icon">🚗</span><span class="nav-text">Car maintenance</span><span class="nav-badge" id="badge-car"></span></div>
+          <div class="nav-item" onclick="nav('workout')"><span class="nav-icon">💪</span><span class="nav-text">Workout log</span><span class="nav-badge" id="badge-workout"></span></div>
+        </nav>
+        <div class="sidebar-bottom">
+          <span id="user-email-display"></span>
+          <button class="btn-signout" onclick="handleSignOut()">Sign out</button>
+        </div>
+      </div>
+
+      <!-- MAIN WRAPPER -->
+      <div class="main-wrapper">
+
+        <!-- TOP BAR -->
+        <div class="topbar">
+          <div class="topbar-left">
+            <div class="topbar-greeting" id="topbar-greeting">Good day!</div>
+            <div class="topbar-date" id="topbar-date"></div>
+          </div>
+          <div class="topbar-msg">
+            <textarea id="daily-msg" placeholder="Write your daily message here…" onblur="saveDailyMsg()" rows="1"></textarea>
+          </div>
+          <div class="topbar-right">
+            <span class="dark-label" id="dark-label">🌙</span>
+            <div class="dark-toggle" id="dark-toggle" onclick="toggleDark()"><div class="dark-knob" id="dark-knob"></div></div>
+          </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main">
+          <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div></div>
+
+          <!-- TO-DO -->
+          <div id="sec-todo" class="section active">
+            <div class="section-header">
+              <span class="section-title">To-do list</span>
+              <div class="section-meta">
+                <div class="section-progress"><span class="meta-stat" id="todo-stat"></span><div class="mini-bar"><div class="mini-fill" id="todo-bar"></div></div></div>
+                <button class="action-btn" onclick="exportCSV('todo')">⬇ Export CSV</button>
+              </div>
+            </div>
+            <div class="search-row"><input class="search-input" id="search-todo" placeholder="Search tasks…" oninput="filterTable('todo')"/><span class="sort-hint">Click column headers to sort</span></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table" id="table-todo">
+                <thead>
+                  <tr>
+                    <th class="drag-th"></th>
+                    <th onclick="sortTable('todo',0)">Task ↕</th>
+                    <th onclick="sortTable('todo',1)">Priority ↕</th>
+                    <th onclick="sortTable('todo',2)">Category ↕</th>
+                    <th onclick="sortTable('todo',3)">Due date ↕</th>
+                    <th onclick="sortTable('todo',4)">Status ↕</th>
+                    <th>Note</th>
+                    <th></th>
+                  </tr>
+                  <tr class="add-row">
+                    <td><input id="todo-task" placeholder="Task…"></td>
+                    <td><select id="todo-pri"><option value="High">High</option><option value="Medium" selected>Medium</option><option value="Low">Low</option></select></td>
+                    <td><input id="todo-cat" placeholder="Category…"></td>
+                    <td><input id="todo-due" type="date"></td>
+                    <td><select id="todo-status"><option value="To do">To do</option><option value="In progress">In progress</option><option value="Done">Done</option></select></td>
+                    <td><input id="todo-note" placeholder="Note…"></td>
+                    <td><button class="add-btn" onclick="addItem('todo')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="todo-list"></tbody>
+              </table>
+            </div>
+            <div class="mob-cards" id="mob-todo-cards"></div>
+          </div>
+
+          <!-- BOOKS -->
+          <div id="sec-books" class="section">
+            <div class="section-header">
+              <span class="section-title">Books</span>
+              <div class="section-meta">
+                <div class="section-progress"><span class="meta-stat" id="books-stat"></span><div class="mini-bar"><div class="mini-fill" id="books-bar"></div></div></div>
+                <button class="action-btn" onclick="exportCSV('books')">⬇ Export CSV</button>
+              </div>
+            </div>
+            <div class="search-row"><input class="search-input" id="search-books" placeholder="Search books…" oninput="filterTable('books')"/><span class="sort-hint">Click column headers to sort</span></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table" id="table-books">
+                <thead>
+                  <tr>
+                    <th class="drag-th"></th>
+                    <th onclick="sortTable('books',0)">Title ↕</th>
+                    <th onclick="sortTable('books',1)">Author ↕</th>
+                    <th onclick="sortTable('books',2)">Category ↕</th>
+                    <th onclick="sortTable('books',3)">Status ↕</th>
+                    <th></th>
+                  </tr>
+                  <tr class="add-row">
+                    <td><input id="books-title" placeholder="Title…"></td>
+                    <td><input id="books-author" placeholder="Author…"></td>
+                    <td><select id="books-category"><option value="Health">Health</option><option value="Personal Growth">Personal Growth</option><option value="Music">Music</option><option value="Business">Business</option><option value="Finance">Finance</option><option value="Science">Science</option><option value="History">History</option><option value="Philosophy">Philosophy</option><option value="Psychology">Psychology</option><option value="Biography">Biography</option><option value="Fiction">Fiction</option><option value="Self-Help">Self-Help</option><option value="Spirituality">Spirituality</option><option value="Technology">Technology</option><option value="Other">Other</option></select></td>
+                    <td><select id="books-status"><option value="Want to read">Want to read</option><option value="Reading">Reading</option><option value="Read">Read</option></select></td>
+                    <td><button class="add-btn" onclick="addItem('books')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="books-list"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="mob-cards" id="mob-books-cards"></div>
+          </div>
+
+          <!-- VIDEOS -->
+          <div id="sec-videos" class="section">
+            <div class="section-header">
+              <span class="section-title">Videos to watch</span>
+              <div class="section-meta">
+                <div class="section-progress"><span class="meta-stat" id="videos-stat"></span><div class="mini-bar"><div class="mini-fill" id="videos-bar"></div></div></div>
+                <button class="action-btn" onclick="exportCSV('videos')">⬇ Export CSV</button>
+              </div>
+            </div>
+            <div class="search-row"><input class="search-input" id="search-videos" placeholder="Search videos…" oninput="filterTable('videos')"/><span class="sort-hint">Click column headers to sort</span></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table" id="table-videos">
+                <thead>
+                  <tr>
+                    <th class="drag-th"></th>
+                    <th onclick="sortTable('videos',0)">Title ↕</th>
+                    <th onclick="sortTable('videos',1)">Category ↕</th>
+                    <th onclick="sortTable('videos',2)">Source ↕</th>
+                    <th onclick="sortTable('videos',3)">Status ↕</th>
+                    <th></th>
+                  </tr>
+                  <tr class="add-row">
+                    <td><input id="videos-title" placeholder="Title…"></td>
+                    <td><select id="videos-category"><option value="Health">Health</option><option value="Personal Growth">Personal Growth</option><option value="Music">Music</option><option value="Technology">Technology</option><option value="Science">Science</option><option value="Finance">Finance</option><option value="History">History</option><option value="Comedy">Comedy</option><option value="Motivation">Motivation</option><option value="Cooking">Cooking</option><option value="Travel">Travel</option><option value="Sports">Sports</option><option value="Documentary">Documentary</option><option value="Education">Education</option><option value="Other">Other</option></select></td>
+                    <td><input id="videos-source" placeholder="YouTube, Netflix…"></td>
+                    <td><select id="videos-status"><option value="To watch">To watch</option><option value="Watching">Watching</option><option value="Done">Done</option></select></td>
+                    <td><button class="add-btn" onclick="addItem('videos')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="videos-list"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="mob-cards" id="mob-videos-cards"></div>
+          </div>
+
+          <!-- RESTAURANTS -->
+          <div id="sec-restaurants" class="section">
+            <div class="section-header">
+              <span class="section-title">Restaurants</span>
+              <div class="section-meta">
+                <div class="section-progress"><span class="meta-stat" id="restaurants-stat"></span><div class="mini-bar"><div class="mini-fill" id="restaurants-bar"></div></div></div>
+                <button class="action-btn" onclick="exportCSV('restaurants')">⬇ Export CSV</button>
+              </div>
+            </div>
+            <div class="search-row"><input class="search-input" id="search-restaurants" placeholder="Search restaurants…" oninput="filterTable('restaurants')"/><span class="sort-hint">Click column headers to sort</span></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table" id="table-restaurants">
+                <thead>
+                  <tr>
+                    <th class="drag-th"></th>
+                    <th onclick="sortTable('restaurants',0)">Name ↕</th>
+                    <th onclick="sortTable('restaurants',1)">Cuisine ↕</th>
+                    <th onclick="sortTable('restaurants',2)">Location ↕</th>
+                    <th onclick="sortTable('restaurants',3)">Price ↕</th>
+                    <th onclick="sortTable('restaurants',4)">Rating ↕</th>
+                    <th onclick="sortTable('restaurants',5)">Status ↕</th>
+                    <th>Notes</th>
+                    <th></th>
+                  </tr>
+                  <tr class="add-row">
+                    <td><input id="restaurants-name" placeholder="Name…"></td>
+                    <td><select id="restaurants-cuisine"><option value="American">American</option><option value="Italian">Italian</option><option value="Mexican">Mexican</option><option value="Japanese">Japanese</option><option value="Chinese">Chinese</option><option value="Thai">Thai</option><option value="Indian">Indian</option><option value="Mediterranean">Mediterranean</option><option value="French">French</option><option value="Greek">Greek</option><option value="Korean">Korean</option><option value="Vietnamese">Vietnamese</option><option value="BBQ">BBQ</option><option value="Seafood">Seafood</option><option value="Steakhouse">Steakhouse</option><option value="Vegan">Vegan</option><option value="Other">Other</option></select></td>
+                    <td><input id="restaurants-location" placeholder="City…"></td>
+                    <td><select id="restaurants-price"><option value="$">$ Budget</option><option value="$$">$$ Mid-range</option><option value="$$$">$$$ Upscale</option><option value="$$$$">$$$$ Fine dining</option></select></td>
+                    <td><select id="restaurants-rating"><option value="">—</option><option value="⭐">⭐ 1</option><option value="⭐⭐">⭐⭐ 2</option><option value="⭐⭐⭐">⭐⭐⭐ 3</option><option value="⭐⭐⭐⭐">⭐⭐⭐⭐ 4</option><option value="⭐⭐⭐⭐⭐">⭐⭐⭐⭐⭐ 5</option></select></td>
+                    <td><select id="restaurants-status"><option value="Want to try">Want to try</option><option value="Tried">Tried</option><option value="Favorite">Favorite</option></select></td>
+                    <td><input id="restaurants-notes" placeholder="Notes…"></td>
+                    <td><button class="add-btn" onclick="addItem('restaurants')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="restaurants-list"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="mob-cards" id="mob-restaurants-cards"></div>
+          </div>
+
+          <!-- TRAVEL -->
+          <div id="sec-travel" class="section">
+            <div class="section-header">
+              <span class="section-title">Travel</span>
+              <div class="section-meta">
+                <div class="section-progress"><span class="meta-stat" id="travel-stat"></span><div class="mini-bar"><div class="mini-fill" id="travel-bar"></div></div></div>
+                <button class="action-btn" onclick="exportCSV('travel')">⬇ Export CSV</button>
+              </div>
+            </div>
+            <div class="search-row"><input class="search-input" id="search-travel" placeholder="Search destinations…" oninput="filterTable('travel')"/><span class="sort-hint">Click column headers to sort</span></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table" id="table-travel">
+                <thead>
+                  <tr>
+                    <th class="drag-th"></th>
+                    <th onclick="sortTable('travel',0)">City / Destination ↕</th>
+                    <th onclick="sortTable('travel',1)">Country ↕</th>
+                    <th onclick="sortTable('travel',2)">Continent ↕</th>
+                    <th onclick="sortTable('travel',3)">Type ↕</th>
+                    <th onclick="sortTable('travel',4)">Status ↕</th>
+                    <th>Notes</th>
+                    <th></th>
+                  </tr>
+                  <tr class="add-row">
+                    <td><input id="travel-city" placeholder="City or destination…"></td>
+                    <td><input id="travel-country" placeholder="Country…"></td>
+                    <td><select id="travel-continent"><option value="North America">North America</option><option value="South America">South America</option><option value="Europe">Europe</option><option value="Asia">Asia</option><option value="Africa">Africa</option><option value="Oceania">Oceania</option><option value="Middle East">Middle East</option><option value="Caribbean">Caribbean</option></select></td>
+                    <td><select id="travel-type"><option value="Beach">Beach</option><option value="City">City</option><option value="Adventure">Adventure</option><option value="Cultural">Cultural</option><option value="Nature">Nature</option><option value="Road trip">Road trip</option><option value="Cruise">Cruise</option><option value="Other">Other</option></select></td>
+                    <td><select id="travel-status"><option value="Wish list">Wish list</option><option value="Planned">Planned</option><option value="Visited">Visited</option></select></td>
+                    <td><input id="travel-notes" placeholder="Notes…"></td>
+                    <td><button class="add-btn" onclick="addItem('travel')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="travel-list"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="mob-cards" id="mob-travel-cards"></div>
+          </div>
+
+          <!-- GROCERIES -->
+          <div id="sec-groceries" class="section">
+            <div class="section-header">
+              <span class="section-title">Groceries</span>
+              <div class="section-meta">
+                <span class="meta-stat" id="groceries-stat"></span>
+                <button class="action-btn" onclick="clearBought()">Clear bought</button>
+                <button class="action-btn" onclick="exportCSV('groceries')">⬇ Export CSV</button>
+              </div>
+            </div>
+            <div class="search-row"><input class="search-input" id="search-groceries" placeholder="Search items…" oninput="filterTable('groceries')"/></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table" id="table-groceries">
+                <thead>
+                  <tr>
+                    <th class="drag-th"></th>
+                    <th onclick="sortTable('groceries',0)">Item ↕</th>
+                    <th onclick="sortTable('groceries',1)">Qty ↕</th>
+                    <th onclick="sortTable('groceries',2)">Status ↕</th>
+                    <th></th>
+                  </tr>
+                  <tr class="add-row">
+                    <td><input id="groceries-item" placeholder="Item…"></td>
+                    <td><input id="groceries-qty" placeholder="Qty" style="max-width:80px"></td>
+                    <td><select id="groceries-status"><option value="need">Need to buy</option><option value="bought">Bought</option></select></td>
+                    <td><button class="add-btn" onclick="addItem('groceries')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="groceries-list"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="mob-cards" id="mob-groceries-cards"></div>
+          </div>
+
+          <!-- SUBSCRIPTIONS -->
+          <div id="sec-subs" class="section">
+            <div class="section-header">
+              <span class="section-title">Subscriptions</span>
+              <div class="section-meta">
+                <span class="meta-stat" id="subs-stat"></span>
+                <button class="action-btn" onclick="exportCSV('subs')">⬇ Export CSV</button>
+              </div>
+            </div>
+            <div class="search-row"><input class="search-input" id="search-subs" placeholder="Search subscriptions…" oninput="filterTable('subs')"/></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table" id="table-subs">
+                <thead>
+                  <tr>
+                    <th class="drag-th"></th>
+                    <th onclick="sortTable('subs',0)">Service ↕</th>
+                    <th onclick="sortTable('subs',1)">Cost/mo ↕</th>
+                    <th onclick="sortTable('subs',2)">Status ↕</th>
+                    <th></th>
+                  </tr>
+                  <tr class="add-row">
+                    <td><input id="subs-name" placeholder="Service name…"></td>
+                    <td><input id="subs-cost" placeholder="$/mo" type="number" min="0" step="0.01"></td>
+                    <td><select id="subs-status"><option value="active">Active</option><option value="paused">Paused</option></select></td>
+                    <td><button class="add-btn" onclick="addItem('subs')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="subs-list"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="mob-cards" id="mob-subs-cards"></div>
+          </div>
+
+          <!-- BUDGET -->
+          <div id="sec-budget" class="section">
+            <div class="section-header">
+              <span class="section-title">Budget</span>
+              <div class="section-meta">
+                <button class="action-btn" onclick="exportCSV('budget')">⬇ Export CSV</button>
+              </div>
+            </div>
+            <div class="budget-grid">
+              <div class="budget-card"><div class="budget-lbl">Monthly income</div><div class="budget-val income" id="b-income">$0.00</div></div>
+              <div class="budget-card"><div class="budget-lbl">Total expenses</div><div class="budget-val expense" id="b-expense">$0.00</div></div>
+              <div class="budget-card"><div class="budget-lbl">Balance</div><div class="budget-val balance" id="b-balance">$0.00</div></div>
+              <div class="budget-card"><div class="budget-lbl">Spent vs income</div><div class="progress-bar"><div class="progress-fill" id="b-bar" style="width:0%"></div></div><div class="meta-info" id="b-pct" style="margin-top:4px">0%</div></div>
+            </div>
+            <div class="search-row"><input class="search-input" id="search-budget" placeholder="Search entries…" oninput="filterTable('budget')"/></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table" id="table-budget">
+                <thead>
+                  <tr>
+                    <th class="drag-th"></th>
+                    <th onclick="sortTable('budget',0)">Description ↕</th>
+                    <th onclick="sortTable('budget',1)">Category ↕</th>
+                    <th onclick="sortTable('budget',2)">Date ↕</th>
+                    <th onclick="sortTable('budget',3)">Type ↕</th>
+                    <th onclick="sortTable('budget',4)">Amount ↕</th>
+                    <th></th>
+                  </tr>
+                  <tr class="add-row">
+                    <td><input id="budget-label" placeholder="Description…"></td>
+                    <td><input id="budget-category" placeholder="Category…"></td>
+                    <td></td>
+                    <td><select id="budget-type"><option value="expense">Expense</option><option value="income">Income</option></select></td>
+                    <td><input id="budget-amount" placeholder="Amount" type="number" min="0" step="0.01"></td>
+                    <td><button class="add-btn" onclick="addItem('budget')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="budget-list"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="mob-cards" id="mob-budget-cards"></div>
+          </div>
+
+          <!-- CAR -->
+          <div id="sec-car" class="section">
+            <div class="section-header">
+              <span class="section-title">Car maintenance</span>
+              <div class="section-meta">
+                <div class="section-progress"><span class="meta-stat" id="car-stat"></span><div class="mini-bar"><div class="mini-fill" id="car-bar"></div></div></div>
+                <button class="action-btn" onclick="exportCSV('car')">⬇ Export CSV</button>
+              </div>
+            </div>
+            <div class="search-row"><input class="search-input" id="search-car" placeholder="Search tasks…" oninput="filterTable('car')"/><span class="sort-hint">Click column headers to sort</span></div>
+            <div class="todo-table-wrap">
+              <table class="todo-table" id="table-car">
+                <thead>
+                  <tr>
+                    <th class="drag-th"></th>
+                    <th onclick="sortTable('car',0)">Task ↕</th>
+                    <th onclick="sortTable('car',1)">Type ↕</th>
+                    <th onclick="sortTable('car',2)">Date ↕</th>
+                    <th onclick="sortTable('car',3)">Mileage ↕</th>
+                    <th onclick="sortTable('car',4)">Cost ↕</th>
+                    <th onclick="sortTable('car',5)">Status ↕</th>
+                    <th>Notes</th>
+                    <th></th>
+                  </tr>
+                  <tr class="add-row">
+                    <td><input id="car-task" placeholder="e.g. Oil change…"></td>
+                    <td><select id="car-type"><option value="Oil change">Oil change</option><option value="Tire rotation">Tire rotation</option><option value="Tire replacement">Tire replacement</option><option value="Brake service">Brake service</option><option value="Battery">Battery</option><option value="Air filter">Air filter</option><option value="Alignment">Alignment</option><option value="Transmission">Transmission</option><option value="Inspection">Inspection</option><option value="Coolant flush">Coolant flush</option><option value="Windshield">Windshield</option><option value="AC service">AC service</option><option value="Other">Other</option></select></td>
+                    <td><input id="car-date" type="date"></td>
+                    <td><input id="car-miles" placeholder="Miles" type="number"></td>
+                    <td><input id="car-cost" placeholder="$" type="number" step="0.01"></td>
+                    <td><select id="car-status"><option value="Pending">Pending</option><option value="Done">Done</option><option value="Overdue">Overdue</option></select></td>
+                    <td><input id="car-notes" placeholder="Notes…"></td>
+                    <td><button class="add-btn" onclick="addItem('car')">+ Add</button></td>
+                  </tr>
+                </thead>
+                <tbody id="car-list"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="mob-cards" id="mob-car-cards"></div>
+          </div>
+
+          <!-- WORKOUT -->
+          <div id="sec-workout" class="section">
+            <div class="section-header">
+              <span class="section-title">Workout log</span>
+              <div class="section-meta">
+                <button class="action-btn" onclick="exportCSV('workout')">⬇ Export CSV</button>
+              </div>
+            </div>
+            <div class="add-form">
+              <input id="workout-type" placeholder="Activity (e.g. Run, Gym)…">
+              <input id="workout-date" type="date">
+              <input id="workout-duration" placeholder="Duration (min)" type="number" style="max-width:130px">
+              <input id="workout-notes" placeholder="Notes (optional)">
+              <button class="add-btn" onclick="addItem('workout')">+ Log</button>
+            </div>
+            <div id="workout-stats" class="stats-row"></div>
+            <div class="workout-grid" id="workout-list"></div>
+          <div class="mob-cards" id="mob-workout-cards"></div>
+          </div>
+
+        </div><!-- end main -->
+      </div><!-- end main-wrapper -->
+    </div><!-- end dash -->
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="mob-nav" id="mob-nav">
+      <div class="mob-nav-item active" onclick="nav('todo')"><span class="mob-nav-icon">✓</span><span class="mob-nav-label">To-do</span></div>
+      <div class="mob-nav-item" onclick="nav('books')"><span class="mob-nav-icon">📖</span><span class="mob-nav-label">Books</span></div>
+      <div class="mob-nav-item" onclick="nav('videos')"><span class="mob-nav-icon">▶</span><span class="mob-nav-label">Videos</span></div>
+      <div class="mob-nav-item" onclick="nav('restaurants')"><span class="mob-nav-icon">🍽</span><span class="mob-nav-label">Restaurants</span></div>
+      <div class="mob-nav-item" onclick="nav('travel')"><span class="mob-nav-icon">✈</span><span class="mob-nav-label">Travel</span></div>
+      <div class="mob-nav-item" onclick="nav('groceries')"><span class="mob-nav-icon">🛒</span><span class="mob-nav-label">Groceries</span></div>
+      <div class="mob-nav-item" onclick="nav('subs')"><span class="mob-nav-icon">♻</span><span class="mob-nav-label">Subs</span></div>
+      <div class="mob-nav-item" onclick="nav('budget')"><span class="mob-nav-icon">$</span><span class="mob-nav-label">Budget</span></div>
+      <div class="mob-nav-item" onclick="nav('car')"><span class="mob-nav-icon">🚗</span><span class="mob-nav-label">Car</span></div>
+      <div class="mob-nav-item" onclick="nav('workout')"><span class="mob-nav-icon">💪</span><span class="mob-nav-label">Workout</span></div>
+    </nav>
+
+  </div><!-- end dashboard -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
