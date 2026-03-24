@@ -570,3 +570,412 @@ async function renderWorkout() {
       <button class="del-btn" onclick="deleteWorkout('${w.id}')" style="margin-top:6px">✕ Remove</button>
     </div>`).join('');
 }
+
+// ══════════════════════════════════════════════════════════════
+//  MOBILE LAYER
+// ══════════════════════════════════════════════════════════════
+
+function isMobile() { return window.innerWidth <= 768; }
+
+// ── MOBILE NAV SYNC ───────────────────────────────────────────
+const _origNav = nav;
+function nav(sec) {
+  _origNav(sec);
+  if (isMobile()) {
+    document.querySelectorAll('.mob-nav-item').forEach(n => n.classList.remove('active'));
+    const mobItem = document.querySelector(`.mob-nav-item[onclick="nav('${sec}')"]`);
+    if (mobItem) mobItem.classList.add('active');
+    renderMobCards(sec);
+  }
+}
+
+// ── MOBILE SHOW DASHBOARD ─────────────────────────────────────
+const _origShow = showDashboard;
+function showDashboard() {
+  _origShow();
+  if (isMobile()) {
+    const gr = document.getElementById('mob-greeting');
+    if (gr) gr.textContent = document.getElementById('topbar-greeting').textContent;
+    syncMobDailyMsg();
+    renderMobCards(currentSection);
+  }
+}
+
+async function syncMobDailyMsg() {
+  const { data } = await db.from('daily_message').select('message').eq('user_id', uid()).single();
+  const el = document.getElementById('mob-daily-msg');
+  if (el && data) el.value = data.message || '';
+}
+async function saveMobDailyMsg() {
+  const message = (document.getElementById('mob-daily-msg')||{value:''}).value;
+  await db.from('daily_message').upsert({ user_id: uid(), message, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+}
+
+// ── DARK MODE SYNC ────────────────────────────────────────────
+const _origDark = toggleDark;
+function toggleDark() {
+  _origDark();
+  const isDark = document.body.classList.contains('dark');
+  const btn = document.getElementById('mob-dark-btn');
+  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+}
+
+// ── RENDER MOBILE CARDS ───────────────────────────────────────
+async function renderMobCards(sec) {
+  const el = document.getElementById('mob-'+sec+'-cards');
+  if (!el) return;
+
+  const table = sectionTables[sec];
+  if (!table && sec !== 'workout') { el.innerHTML = ''; return; }
+
+  let rows = [];
+  try { rows = await dbSelect(table || 'workouts'); } catch(e) { return; }
+
+  if (!rows.length) {
+    el.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--lb-200);font-size:13px">Nothing here yet — tap + to add</div>`;
+    return;
+  }
+
+  el.innerHTML = rows.map(row => mobCardHTML(sec, row)).join('');
+}
+
+function mobCardHTML(sec, row) {
+  const id = row.id;
+  switch(sec) {
+    case 'todo': {
+      const over = isOverdue(row.due_date) && !row.done;
+      const priColor = {High:'red',Medium:'amber',Low:'green'}[row.priority]||'';
+      return `<div class="mob-card ${row.done?'done-card':''}" data-id="${id}">
+        <div class="mob-card-header">
+          <input class="check" type="checkbox" ${row.done?'checked':''} onchange="toggleTodo('${id}',${row.done});renderMobCards('todo')">
+          <span class="mob-card-title ${row.done?'done':''}">${esc(row.text)}</span>
+          <button class="mob-card-del" onclick="deleteTodo('${id}');renderMobCards('todo')">✕</button>
+        </div>
+        <div class="mob-card-meta">
+          ${row.priority?`<span class="mob-pill ${priColor}">${esc(row.priority)}</span>`:''}
+          ${row.category?`<span class="mob-pill">${esc(row.category)}</span>`:''}
+          ${row.status?`<span class="mob-pill ${row.status==='Done'?'green':row.status==='In progress'?'amber':''}">${esc(row.status)}</span>`:''}
+          ${row.due_date?`<span class="mob-pill ${over?'red':''}">${over?'⚠ ':''}${row.due_date}</span>`:''}
+        </div>
+        ${row.note?`<div class="mob-card-note">${esc(row.note)}</div>`:''}
+      </div>`;
+    }
+    case 'books': {
+      const stColor = {Read:'green',Reading:'amber','Want to read':''}[row.status]||'';
+      return `<div class="mob-card ${row.status==='Read'?'done-card':''}" data-id="${id}">
+        <div class="mob-card-header">
+          <input class="check" type="checkbox" ${row.status==='Read'?'checked':''} onchange="toggleBook('${id}','${row.status}');renderMobCards('books')">
+          <span class="mob-card-title ${row.status==='Read'?'done':''}">${esc(row.title)}</span>
+          <button class="mob-card-del" onclick="deleteBook('${id}');renderMobCards('books')">✕</button>
+        </div>
+        <div class="mob-card-meta">
+          ${row.author?`<span class="mob-pill gray">${esc(row.author)}</span>`:''}
+          ${row.category?`<span class="mob-pill">${esc(row.category)}</span>`:''}
+          ${row.status?`<span class="mob-pill ${stColor}">${esc(row.status)}</span>`:''}
+        </div>
+      </div>`;
+    }
+    case 'videos': {
+      const stColor = {Done:'green',Watching:'amber','To watch':''}[row.status]||'';
+      return `<div class="mob-card ${row.status==='Done'?'done-card':''}" data-id="${id}">
+        <div class="mob-card-header">
+          <input class="check" type="checkbox" ${row.status==='Done'?'checked':''} onchange="toggleVideo('${id}','${row.status}');renderMobCards('videos')">
+          <span class="mob-card-title ${row.status==='Done'?'done':''}">${esc(row.title)}</span>
+          <button class="mob-card-del" onclick="deleteVideo('${id}');renderMobCards('videos')">✕</button>
+        </div>
+        <div class="mob-card-meta">
+          ${row.category?`<span class="mob-pill">${esc(row.category)}</span>`:''}
+          ${row.source?`<span class="mob-pill gray">${esc(row.source)}</span>`:''}
+          ${row.status?`<span class="mob-pill ${stColor}">${esc(row.status)}</span>`:''}
+        </div>
+      </div>`;
+    }
+    case 'restaurants': {
+      const stColor = {Favorite:'green',Tried:'amber','Want to try':''}[row.status]||'';
+      return `<div class="mob-card" data-id="${id}">
+        <div class="mob-card-header">
+          <input class="check" type="checkbox" ${row.status!=='Want to try'?'checked':''} onchange="toggleRestaurant('${id}','${row.status}');renderMobCards('restaurants')">
+          <span class="mob-card-title">${esc(row.name)}</span>
+          <button class="mob-card-del" onclick="deleteRestaurant('${id}');renderMobCards('restaurants')">✕</button>
+        </div>
+        <div class="mob-card-meta">
+          ${row.cuisine?`<span class="mob-pill">${esc(row.cuisine)}</span>`:''}
+          ${row.location?`<span class="mob-pill gray">${esc(row.location)}</span>`:''}
+          ${row.price_range?`<span class="mob-pill">${esc(row.price_range)}</span>`:''}
+          ${row.rating?`<span class="mob-pill">${esc(row.rating)}</span>`:''}
+          ${row.status?`<span class="mob-pill ${stColor}">${esc(row.status)}</span>`:''}
+        </div>
+        ${row.notes?`<div class="mob-card-note">${esc(row.notes)}</div>`:''}
+      </div>`;
+    }
+    case 'travel': {
+      const stColor = {Visited:'green',Planned:'amber','Wish list':''}[row.status]||'';
+      return `<div class="mob-card ${row.status==='Visited'?'done-card':''}" data-id="${id}">
+        <div class="mob-card-header">
+          <input class="check" type="checkbox" ${row.status==='Visited'?'checked':''} onchange="toggleTravel('${id}','${row.status}');renderMobCards('travel')">
+          <span class="mob-card-title">${esc(row.city)}${row.country?`, ${esc(row.country)}`:''}</span>
+          <button class="mob-card-del" onclick="deleteTravel('${id}');renderMobCards('travel')">✕</button>
+        </div>
+        <div class="mob-card-meta">
+          ${row.continent?`<span class="mob-pill">${esc(row.continent)}</span>`:''}
+          ${row.trip_type?`<span class="mob-pill gray">${esc(row.trip_type)}</span>`:''}
+          ${row.status?`<span class="mob-pill ${stColor}">${esc(row.status)}</span>`:''}
+        </div>
+        ${row.notes?`<div class="mob-card-note">${esc(row.notes)}</div>`:''}
+      </div>`;
+    }
+    case 'groceries': {
+      return `<div class="mob-card ${row.status==='bought'?'done-card':''}" data-id="${id}">
+        <div class="mob-card-header">
+          <input class="check" type="checkbox" ${row.status==='bought'?'checked':''} onchange="toggleGrocery('${id}','${row.status}');renderMobCards('groceries')">
+          <span class="mob-card-title ${row.status==='bought'?'done':''}">${esc(row.item)}${row.qty?` × ${esc(row.qty)}`:''}</span>
+          <button class="mob-card-del" onclick="deleteGrocery('${id}');renderMobCards('groceries')">✕</button>
+        </div>
+        <div class="mob-card-meta">
+          <span class="mob-pill ${row.status==='bought'?'green':'amber'}">${row.status==='bought'?'Bought':'Need to buy'}</span>
+        </div>
+      </div>`;
+    }
+    case 'subs': {
+      return `<div class="mob-card" data-id="${id}">
+        <div class="mob-card-header">
+          <span class="mob-card-title">${esc(row.name)}</span>
+          <button class="mob-card-del" onclick="deleteSub('${id}');renderMobCards('subs')">✕</button>
+        </div>
+        <div class="mob-card-meta">
+          <span class="mob-pill">${'$'+(row.cost||0).toFixed(2)}/mo</span>
+          <span class="mob-pill ${row.status==='active'?'green':'gray'}" onclick="toggleSub('${id}','${row.status}');renderMobCards('subs')" style="cursor:pointer">${row.status==='active'?'Active':'Paused'}</span>
+        </div>
+      </div>`;
+    }
+    case 'budget': {
+      const isInc = row.type==='income';
+      return `<div class="mob-card" data-id="${id}">
+        <div class="mob-card-header">
+          <span class="mob-card-title">${esc(row.label)}</span>
+          <span style="font-size:15px;font-weight:600;color:${isInc?'var(--green)':'var(--red)'};margin-left:auto;padding-right:8px">${isInc?'+':'-'}$${row.amount.toFixed(2)}</span>
+          <button class="mob-card-del" onclick="deleteBudget('${id}');renderMobCards('budget')">✕</button>
+        </div>
+        <div class="mob-card-meta">
+          ${row.category?`<span class="mob-pill">${esc(row.category)}</span>`:''}
+          <span class="mob-pill ${isInc?'green':'red'}">${isInc?'Income':'Expense'}</span>
+          ${row.entry_date?`<span class="mob-pill gray">${row.entry_date}</span>`:''}
+        </div>
+      </div>`;
+    }
+    case 'car': {
+      const stColor = {Done:'green',Overdue:'red',Pending:'amber'}[row.status]||'';
+      return `<div class="mob-card ${row.status==='Done'?'done-card':''}" data-id="${id}">
+        <div class="mob-card-header">
+          <input class="check" type="checkbox" ${row.status==='Done'?'checked':''} onchange="toggleCar('${id}','${row.status}');renderMobCards('car')">
+          <span class="mob-card-title">${esc(row.task)}</span>
+          <button class="mob-card-del" onclick="deleteCar('${id}');renderMobCards('car')">✕</button>
+        </div>
+        <div class="mob-card-meta">
+          ${row.car_type?`<span class="mob-pill">${esc(row.car_type)}</span>`:''}
+          ${row.service_date?`<span class="mob-pill gray">${row.service_date}</span>`:''}
+          ${row.mileage?`<span class="mob-pill">${row.mileage.toLocaleString()} mi</span>`:''}
+          ${row.cost?`<span class="mob-pill">$${Number(row.cost).toFixed(2)}</span>`:''}
+          ${row.status?`<span class="mob-pill ${stColor}">${esc(row.status)}</span>`:''}
+        </div>
+        ${row.notes?`<div class="mob-card-note">${esc(row.notes)}</div>`:''}
+      </div>`;
+    }
+    case 'workout': {
+      return `<div class="mob-card" data-id="${id}">
+        <div class="mob-card-header">
+          <span class="mob-card-title">${esc(row.type)}</span>
+          <button class="mob-card-del" onclick="deleteWorkout('${id}');renderMobCards('workout')">✕</button>
+        </div>
+        <div class="mob-card-meta">
+          ${row.workout_date?`<span class="mob-pill gray">${row.workout_date}</span>`:''}
+          ${row.duration_min?`<span class="mob-pill">${row.duration_min} min</span>`:''}
+        </div>
+        ${row.notes?`<div class="mob-card-note">${esc(row.notes)}</div>`:''}
+      </div>`;
+    }
+    default: return '';
+  }
+}
+
+// ── MOBILE ADD MODAL ──────────────────────────────────────────
+const mobForms = {
+  todo: {
+    title: 'Add task',
+    fields: [
+      { id:'m-todo-task', label:'Task', type:'text', placeholder:'What needs to be done?' },
+      { id:'m-todo-pri', label:'Priority', type:'select', options:['High','Medium','Low'], default:'Medium' },
+      { id:'m-todo-cat', label:'Category', type:'text', placeholder:'e.g. Health, Finance…' },
+      { id:'m-todo-due', label:'Due date', type:'date' },
+      { id:'m-todo-status', label:'Status', type:'select', options:['To do','In progress','Done'] },
+      { id:'m-todo-note', label:'Note', type:'text', placeholder:'Optional note…' },
+    ],
+    submit: async () => {
+      const text = mv('m-todo-task'); if(!text) return;
+      await dbInsert('todos',{text, priority:mv('m-todo-pri')||'Medium', category:mv('m-todo-cat'), due_date:document.getElementById('m-todo-due').value||null, status:mv('m-todo-status')||'To do', note:mv('m-todo-note'), done:false});
+      closeMobModal(); await renderTodo(); await renderMobCards('todo');
+    }
+  },
+  books: {
+    title: 'Add book',
+    fields: [
+      { id:'m-books-title', label:'Title', type:'text', placeholder:'Book title…' },
+      { id:'m-books-author', label:'Author', type:'text', placeholder:'Author name…' },
+      { id:'m-books-cat', label:'Category', type:'select', options:['Health','Personal Growth','Music','Business','Finance','Science','History','Philosophy','Psychology','Biography','Fiction','Self-Help','Spirituality','Technology','Other'] },
+      { id:'m-books-status', label:'Status', type:'select', options:['Want to read','Reading','Read'] },
+    ],
+    submit: async () => {
+      const title = mv('m-books-title'); if(!title) return;
+      await dbInsert('books',{title, author:mv('m-books-author'), category:mv('m-books-cat'), status:mv('m-books-status')});
+      closeMobModal(); await renderBooks(); await renderMobCards('books');
+    }
+  },
+  videos: {
+    title: 'Add video',
+    fields: [
+      { id:'m-videos-title', label:'Title', type:'text', placeholder:'Video title…' },
+      { id:'m-videos-cat', label:'Category', type:'select', options:['Health','Personal Growth','Music','Technology','Science','Finance','History','Comedy','Motivation','Cooking','Travel','Sports','Documentary','Education','Other'] },
+      { id:'m-videos-source', label:'Source', type:'text', placeholder:'YouTube, Netflix…' },
+      { id:'m-videos-status', label:'Status', type:'select', options:['To watch','Watching','Done'] },
+    ],
+    submit: async () => {
+      const title = mv('m-videos-title'); if(!title) return;
+      await dbInsert('videos',{title, category:mv('m-videos-cat'), source:mv('m-videos-source'), status:mv('m-videos-status')});
+      closeMobModal(); await renderVideos(); await renderMobCards('videos');
+    }
+  },
+  restaurants: {
+    title: 'Add restaurant',
+    fields: [
+      { id:'m-rest-name', label:'Name', type:'text', placeholder:'Restaurant name…' },
+      { id:'m-rest-cuisine', label:'Cuisine', type:'select', options:['American','Italian','Mexican','Japanese','Chinese','Thai','Indian','Mediterranean','French','Greek','Korean','Vietnamese','BBQ','Seafood','Steakhouse','Vegan','Other'] },
+      { id:'m-rest-loc', label:'Location', type:'text', placeholder:'City…' },
+      { id:'m-rest-price', label:'Price range', type:'select', options:['$','$$','$$$','$$$$'] },
+      { id:'m-rest-rating', label:'Rating', type:'select', options:['','⭐','⭐⭐','⭐⭐⭐','⭐⭐⭐⭐','⭐⭐⭐⭐⭐'] },
+      { id:'m-rest-status', label:'Status', type:'select', options:['Want to try','Tried','Favorite'] },
+      { id:'m-rest-notes', label:'Notes', type:'text', placeholder:'Optional notes…' },
+    ],
+    submit: async () => {
+      const name = mv('m-rest-name'); if(!name) return;
+      await dbInsert('restaurants',{name, cuisine:mv('m-rest-cuisine'), location:mv('m-rest-loc'), price_range:mv('m-rest-price'), rating:mv('m-rest-rating'), status:mv('m-rest-status'), notes:mv('m-rest-notes')});
+      closeMobModal(); await renderRestaurants(); await renderMobCards('restaurants');
+    }
+  },
+  travel: {
+    title: 'Add destination',
+    fields: [
+      { id:'m-travel-city', label:'City / Destination', type:'text', placeholder:'City name…' },
+      { id:'m-travel-country', label:'Country', type:'text', placeholder:'Country…' },
+      { id:'m-travel-continent', label:'Continent', type:'select', options:['North America','South America','Europe','Asia','Africa','Oceania','Middle East','Caribbean'] },
+      { id:'m-travel-type', label:'Type', type:'select', options:['Beach','City','Adventure','Cultural','Nature','Road trip','Cruise','Other'] },
+      { id:'m-travel-status', label:'Status', type:'select', options:['Wish list','Planned','Visited'] },
+      { id:'m-travel-notes', label:'Notes', type:'text', placeholder:'Optional notes…' },
+    ],
+    submit: async () => {
+      const city = mv('m-travel-city'); if(!city) return;
+      await dbInsert('travel',{city, country:mv('m-travel-country'), continent:mv('m-travel-continent'), trip_type:mv('m-travel-type'), status:mv('m-travel-status'), notes:mv('m-travel-notes')});
+      closeMobModal(); await renderTravel(); await renderMobCards('travel');
+    }
+  },
+  groceries: {
+    title: 'Add grocery item',
+    fields: [
+      { id:'m-groc-item', label:'Item', type:'text', placeholder:'e.g. Milk…' },
+      { id:'m-groc-qty', label:'Quantity', type:'text', placeholder:'e.g. 2 gallons…' },
+      { id:'m-groc-status', label:'Status', type:'select', options:['need','bought'] },
+    ],
+    submit: async () => {
+      const item = mv('m-groc-item'); if(!item) return;
+      await dbInsert('groceries',{item, qty:mv('m-groc-qty'), status:mv('m-groc-status')});
+      closeMobModal(); await renderGroceries(); await renderMobCards('groceries');
+    }
+  },
+  subs: {
+    title: 'Add subscription',
+    fields: [
+      { id:'m-subs-name', label:'Service', type:'text', placeholder:'e.g. Netflix…' },
+      { id:'m-subs-cost', label:'Cost per month ($)', type:'number', placeholder:'9.99' },
+      { id:'m-subs-status', label:'Status', type:'select', options:['active','paused'] },
+    ],
+    submit: async () => {
+      const name = mv('m-subs-name'); if(!name) return;
+      await dbInsert('subscriptions',{name, cost:parseFloat(document.getElementById('m-subs-cost').value)||0, status:mv('m-subs-status')});
+      closeMobModal(); await renderSubs(); await renderMobCards('subs');
+    }
+  },
+  budget: {
+    title: 'Add budget entry',
+    fields: [
+      { id:'m-bud-label', label:'Description', type:'text', placeholder:'What is this for?' },
+      { id:'m-bud-amount', label:'Amount ($)', type:'number', placeholder:'0.00' },
+      { id:'m-bud-type', label:'Type', type:'select', options:['expense','income'] },
+      { id:'m-bud-cat', label:'Category', type:'text', placeholder:'e.g. Food, Rent…' },
+    ],
+    submit: async () => {
+      const label = mv('m-bud-label');
+      const amount = parseFloat(document.getElementById('m-bud-amount').value);
+      if(!label||isNaN(amount)) return;
+      await dbInsert('budget',{label, amount, type:mv('m-bud-type'), category:mv('m-bud-cat'), entry_date:today()});
+      closeMobModal(); await renderBudget(); await renderMobCards('budget');
+    }
+  },
+  car: {
+    title: 'Add maintenance task',
+    fields: [
+      { id:'m-car-task', label:'Task', type:'text', placeholder:'e.g. Oil change…' },
+      { id:'m-car-type', label:'Type', type:'select', options:['Oil change','Tire rotation','Tire replacement','Brake service','Battery','Air filter','Alignment','Transmission','Inspection','Coolant flush','Windshield','AC service','Other'] },
+      { id:'m-car-date', label:'Date', type:'date' },
+      { id:'m-car-miles', label:'Mileage', type:'number', placeholder:'Miles…' },
+      { id:'m-car-cost', label:'Cost ($)', type:'number', placeholder:'0.00' },
+      { id:'m-car-status', label:'Status', type:'select', options:['Pending','Done','Overdue'] },
+      { id:'m-car-notes', label:'Notes', type:'text', placeholder:'Optional notes…' },
+    ],
+    submit: async () => {
+      const task = mv('m-car-task'); if(!task) return;
+      await dbInsert('car_maintenance',{task, car_type:mv('m-car-type'), service_date:document.getElementById('m-car-date').value||null, mileage:parseInt(document.getElementById('m-car-miles').value)||null, cost:parseFloat(document.getElementById('m-car-cost').value)||null, status:mv('m-car-status'), notes:mv('m-car-notes')});
+      closeMobModal(); await renderCar(); await renderMobCards('car');
+    }
+  },
+  workout: {
+    title: 'Log workout',
+    fields: [
+      { id:'m-wo-type', label:'Activity', type:'text', placeholder:'e.g. Run, Gym, Yoga…' },
+      { id:'m-wo-date', label:'Date', type:'date' },
+      { id:'m-wo-dur', label:'Duration (minutes)', type:'number', placeholder:'30' },
+      { id:'m-wo-notes', label:'Notes', type:'text', placeholder:'Optional notes…' },
+    ],
+    submit: async () => {
+      const type = mv('m-wo-type'); if(!type) return;
+      await dbInsert('workouts',{type, workout_date:document.getElementById('m-wo-date').value||today(), duration_min:parseInt(document.getElementById('m-wo-dur').value)||0, notes:mv('m-wo-notes')});
+      closeMobModal(); await renderWorkout(); await renderMobCards('workout');
+    }
+  }
+};
+
+function mv(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+function openMobModal() {
+  const form = mobForms[currentSection];
+  if (!form) return;
+  document.getElementById('mob-modal-title').textContent = form.title;
+  document.getElementById('mob-modal-body').innerHTML = form.fields.map(f => {
+    if (f.type === 'select') {
+      const opts = f.options.map(o => `<option value="${o}"${f.default===o?' selected':''}>${o}</option>`).join('');
+      return `<div class="mob-field"><label>${f.label}</label><select id="${f.id}">${opts}</select></div>`;
+    }
+    return `<div class="mob-field"><label>${f.label}</label><input id="${f.id}" type="${f.type}" placeholder="${f.placeholder||''}"></div>`;
+  }).join('');
+  document.getElementById('mob-modal-submit').onclick = form.submit;
+  document.getElementById('mob-modal-overlay').classList.add('open');
+}
+
+function closeMobModal(e) {
+  if (e && e.target !== document.getElementById('mob-modal-overlay')) return;
+  document.getElementById('mob-modal-overlay').classList.remove('open');
+}
+
+// sync dark mode btn on init
+if (localStorage.getItem('dash-dark') === '1') {
+  const btn = document.getElementById('mob-dark-btn');
+  if (btn) btn.textContent = '☀️';
+}
