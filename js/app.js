@@ -149,11 +149,16 @@ async function dbInsert(table, row) { const { error } = await db.from(table).ins
 async function dbDelete(table, id) { const { error } = await db.from(table).delete().eq('id',id).eq('user_id',uid()); if(error) alert('Delete error: '+error.message); }
 async function dbUpdate(table, id, fields) { const { error } = await db.from(table).update(fields).eq('id',id).eq('user_id',uid()); if(error) alert('Update error: '+error.message); }
 async function dbSelect(table, fallbackOrder='created_at') {
-  const { data, error } = await db.from(table).select('*').eq('user_id',uid()).order('sort_order',{ascending:true, nullsFirst:false});
+  const { data, error } = await db.from(table).select('*').eq('user_id',uid()).order('sort_order',{ascending:true, nullsFirst:false}).order(fallbackOrder, {ascending:false});
   if (error) {
     const { data: d2, error: e2 } = await db.from(table).select('*').eq('user_id',uid()).order(fallbackOrder,{ascending:false});
     if (e2) { console.error(e2); return []; }
     return d2 || [];
+  }
+  const hasOrder = data && data.some(r => r.sort_order !== null && r.sort_order !== undefined);
+  if (!hasOrder) {
+    const { data: d3 } = await db.from(table).select('*').eq('user_id',uid()).order(fallbackOrder,{ascending:false});
+    return d3 || [];
   }
   return data || [];
 }
