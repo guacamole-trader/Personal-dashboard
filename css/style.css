@@ -257,11 +257,280 @@ body.dark .dark-knob { transform: translateX(16px); }
 .spinner { width: 28px; height: 28px; border: 3px solid var(--lb-100); border-top-color: var(--lb-400); border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 640px) {
-  .dash { flex-direction: column; }
-  .sidebar { width: 100% !important; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; }
-  .main { padding: 1rem; }
+/* ══════════════════════════════════════════
+   MOBILE — everything under 768px
+   Desktop stays completely unchanged
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* hide desktop sidebar & topbar */
+  .sidebar, .topbar { display: none !important; }
+
+  /* full-height layout */
+  #dashboard, .dash, .main-wrapper { display: block; height: 100%; }
+
+  /* ── MOBILE HEADER ── */
+  .mob-header {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--lb-100);
+    border-bottom: 0.5px solid var(--lb-200);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .mob-header-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--lb-900);
+  }
+  .mob-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .mob-dark-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+  }
+  .mob-greeting {
+    display: block !important;
+    font-size: 12px;
+    color: var(--lb-600);
+    padding: 8px 16px 0;
+    background: var(--lb-50);
+  }
+  .mob-daily {
+    display: block !important;
+    padding: 8px 16px;
+    background: var(--lb-50);
+    border-bottom: 0.5px solid var(--lb-100);
+  }
+  .mob-daily textarea {
+    width: 100%;
+    border: 0.5px solid var(--lb-200);
+    border-radius: var(--radius-md);
+    padding: 7px 12px;
+    font-size: 13px;
+    color: var(--lb-900);
+    background: var(--white);
+    resize: none;
+    outline: none;
+    font-family: inherit;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    padding: 12px 12px 100px;
+    background: var(--lb-50);
+    min-height: 100vh;
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .section-title { font-size: 16px; }
+  .section-meta { flex-wrap: wrap; gap: 6px; }
+
+  /* ── SEARCH ── */
+  .search-row { flex-wrap: wrap; }
+  .search-input { max-width: 100%; }
+  .sort-hint { display: none; }
+
+  /* ── HIDE TABLE, SHOW CARDS ── */
+  .todo-table-wrap { display: none !important; }
+  .mob-cards { display: flex !important; flex-direction: column; gap: 10px; }
+
+  /* ── MOBILE CARD ── */
+  .mob-card {
+    background: var(--white);
+    border: 0.5px solid var(--lb-100);
+    border-radius: var(--radius-lg);
+    padding: 12px 14px;
+    position: relative;
+  }
+  .mob-card.done-card { opacity: 0.65; }
+  .mob-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .mob-card-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--lb-900);
+    flex: 1;
+    line-height: 1.4;
+  }
+  .mob-card-title.done { text-decoration: line-through; color: var(--gray-400); }
+  .mob-card-del {
+    background: none;
+    border: none;
+    color: var(--lb-200);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .mob-card-del:active { color: var(--red); }
+  .mob-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .mob-pill {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 9px;
+    border-radius: 20px;
+    background: var(--lb-50);
+    color: var(--lb-800);
+  }
+  .mob-pill.green  { background: #EAF3DE; color: #27500A; }
+  .mob-pill.amber  { background: #FAEEDA; color: #633806; }
+  .mob-pill.red    { background: #FCEBEB; color: #791F1F; }
+  .mob-pill.purple { background: #EEEDFE; color: #3C3489; }
+  .mob-pill.gray   { background: #f1efe8; color: #5f5e5a; }
+  .mob-card-note {
+    font-size: 12px;
+    color: var(--gray-600);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+  .mob-card-overdue { color: var(--red); font-weight: 500; }
+
+  /* ── MOBILE ADD FORM (floating modal) ── */
+  .mob-fab {
+    display: flex !important;
+    position: fixed;
+    bottom: 72px;
+    right: 18px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--lb-400);
+    color: #fff;
+    font-size: 26px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(55,138,221,0.4);
+  }
+  .mob-fab:active { background: var(--lb-600); transform: scale(0.95); }
+
+  .mob-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 300;
+    align-items: flex-end;
+  }
+  .mob-modal-overlay.open { display: flex !important; }
+  .mob-modal {
+    background: var(--white);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 20px 16px 32px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .mob-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .mob-modal-title { font-size: 15px; font-weight: 600; color: var(--lb-900); }
+  .mob-modal-close {
+    background: none; border: none; font-size: 22px;
+    color: var(--lb-400); cursor: pointer; padding: 0;
+  }
+  .mob-field { margin-bottom: 12px; }
+  .mob-field label { display: block; font-size: 11px; font-weight: 600; color: var(--lb-600); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .mob-field input, .mob-field select, .mob-field textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 0.5px solid var(--lb-200);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    color: #1a1a1a;
+    background: var(--white);
+    outline: none;
+    font-family: inherit;
+  }
+  .mob-field input:focus, .mob-field select:focus { border-color: var(--lb-400); }
+  .mob-submit {
+    width: 100%;
+    padding: 12px;
+    background: var(--lb-400);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  .mob-submit:active { background: var(--lb-600); }
+
+  /* ── BOTTOM NAV ── */
+  .mob-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--white);
+    border-top: 0.5px solid var(--lb-100);
+    z-index: 200;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .mob-nav::-webkit-scrollbar { display: none; }
+  .mob-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+    min-width: 60px;
+  }
+  .mob-nav-item.active .mob-nav-icon { color: var(--lb-400); }
+  .mob-nav-item.active .mob-nav-label { color: var(--lb-400); font-weight: 600; }
+  .mob-nav-icon { font-size: 18px; color: var(--gray-400); }
+  .mob-nav-label { font-size: 9px; color: var(--gray-400); white-space: nowrap; }
+
+  /* dark mode mobile */
+  body.dark .mob-header { background: #091623; border-color: #113050; }
+  body.dark .mob-card { background: #0f2133; border-color: #113050; }
+  body.dark .mob-card-title { color: #e0eaf8; }
+  body.dark .mob-modal { background: #0f2133; }
+  body.dark .mob-field input, body.dark .mob-field select { background: #0a1929; color: #e0eaf8; border-color: #113050; }
+  body.dark .mob-nav { background: #091623; border-color: #113050; }
+  body.dark .mob-greeting, body.dark .mob-daily { background: #0a1929; }
+  body.dark .main { background: #0a1929; }
+
+  /* budget grid on mobile */
   .budget-grid { grid-template-columns: 1fr 1fr; }
-  .topbar { flex-wrap: wrap; }
+
+  /* workout cards stack nicely already */
+  .workout-grid { grid-template-columns: 1fr 1fr; }
+  .stats-row { grid-template-columns: repeat(3,1fr); }
 }
+
+/* hide mobile elements on desktop */
+.mob-header, .mob-greeting, .mob-daily, .mob-cards,
+.mob-fab, .mob-modal-overlay, .mob-nav { display: none; }
