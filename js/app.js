@@ -149,18 +149,16 @@ async function dbInsert(table, row) { const { error } = await db.from(table).ins
 async function dbDelete(table, id) { const { error } = await db.from(table).delete().eq('id',id).eq('user_id',uid()); if(error) alert('Delete error: '+error.message); }
 async function dbUpdate(table, id, fields) { const { error } = await db.from(table).update(fields).eq('id',id).eq('user_id',uid()); if(error) alert('Update error: '+error.message); }
 async function dbSelect(table, fallbackOrder='created_at') {
-  const { data, error } = await db.from(table).select('*').eq('user_id',uid()).order('sort_order',{ascending:true, nullsFirst:false}).order(fallbackOrder, {ascending:false});
-  if (error) {
-    const { data: d2, error: e2 } = await db.from(table).select('*').eq('user_id',uid()).order(fallbackOrder,{ascending:false});
-    if (e2) { console.error(e2); return []; }
-    return d2 || [];
-  }
-  const hasOrder = data && data.some(r => r.sort_order !== null && r.sort_order !== undefined);
-  if (!hasOrder) {
-    const { data: d3 } = await db.from(table).select('*').eq('user_id',uid()).order(fallbackOrder,{ascending:false});
-    return d3 || [];
-  }
-  return data || [];
+  const { data, error } = await db.from(table).select('*').eq('user_id',uid()).order(fallbackOrder,{ascending:false});
+  if (error) { console.error(error); return []; }
+  if (!data || !data.length) return [];
+  const hasSortOrder = data.some(r => r.sort_order !== null && r.sort_order !== undefined);
+  if (!hasSortOrder) return data;
+  return [...data].sort((a,b) => {
+    const an = a.sort_order ?? 999999;
+    const bn = b.sort_order ?? 999999;
+    return an - bn;
+  });
 }
 
 // ── SECTION LOADER ────────────────────────────────────────────────────────
@@ -169,6 +167,7 @@ async function loadSection(sec) {
   try {
     const fn = { todo:renderTodo, books:renderBooks, travel:renderTravel, subs:renderSubs, restaurants:renderRestaurants, budget:renderBudget, car:renderCar, videos:renderVideos, groceries:renderGroceries, workout:renderWorkout };
     if (fn[sec]) await fn[sec]();
+    if (isMobile()) await renderMobCards(sec);
   } finally { setLoading(false); }
 }
 
@@ -335,7 +334,7 @@ async function renderTodo() {
   const rows = await dbSelect('todos','created_at');
   updateBadge('todo', rows);
   setProgress('todo', rows.filter(r=>r.done).length, rows.length);
-  const el = v('todo-list');
+  const el = v('todo-list'); if (!el) return;
   if (!rows.length) { el.innerHTML=`<tr><td colspan="8" class="empty">No tasks yet</td></tr>`; return; }
   const priC = {'High':'priority-high','Medium':'priority-medium','Low':'priority-low'};
   const stC = {'Done':'status-done','In progress':'status-progress','To do':'status-todo'};
@@ -365,7 +364,7 @@ async function renderBooks() {
   const rows = await dbSelect('books','title');
   updateBadge('books', rows);
   setProgress('books', rows.filter(r=>r.status==='Read').length, rows.length);
-  const el = v('books-list');
+  const el = v('books-list'); if (!el) return;
   if (!rows.length) { el.innerHTML=`<tr><td colspan="6" class="empty">No books yet</td></tr>`; return; }
   const stC = {'Read':'status-done','Reading':'status-progress','Want to read':'status-todo'};
   el.innerHTML = rows.map(b => `
@@ -392,7 +391,7 @@ async function renderVideos() {
   const rows = await dbSelect('videos','title');
   updateBadge('videos', rows);
   setProgress('videos', rows.filter(r=>r.status==='Done').length, rows.length);
-  const el = v('videos-list');
+  const el = v('videos-list'); if (!el) return;
   if (!rows.length) { el.innerHTML=`<tr><td colspan="6" class="empty">No videos yet</td></tr>`; return; }
   const stC = {'Done':'status-done','Watching':'status-progress','To watch':'status-todo'};
   el.innerHTML = rows.map(vd => `
@@ -419,7 +418,7 @@ async function renderRestaurants() {
   const rows = await dbSelect('restaurants','name');
   updateBadge('restaurants', rows);
   setProgress('restaurants', rows.filter(r=>r.status==='Tried'||r.status==='Favorite').length, rows.length);
-  const el = v('restaurants-list');
+  const el = v('restaurants-list'); if (!el) return;
   if (!rows.length) { el.innerHTML=`<tr><td colspan="9" class="empty">No restaurants yet</td></tr>`; return; }
   const stC = {'Favorite':'status-done','Tried':'status-progress','Want to try':'status-todo'};
   el.innerHTML = rows.map(r => `
@@ -449,7 +448,7 @@ async function renderTravel() {
   const rows = await dbSelect('travel','city');
   updateBadge('travel', rows);
   setProgress('travel', rows.filter(r=>r.status==='Visited').length, rows.length);
-  const el = v('travel-list');
+  const el = v('travel-list'); if (!el) return;
   if (!rows.length) { el.innerHTML=`<tr><td colspan="8" class="empty">No destinations yet</td></tr>`; return; }
   const stC = {'Visited':'status-done','Planned':'status-progress','Wish list':'status-todo'};
   el.innerHTML = rows.map(c => `
@@ -485,7 +484,7 @@ async function renderGroceries() {
   const bought = rows.filter(r=>r.status==='bought').length;
   const statEl = v('groceries-stat');
   if (statEl) statEl.textContent = `${bought} of ${rows.length} bought`;
-  const el = v('groceries-list');
+  const el = v('groceries-list'); if (!el) return;
   if (!rows.length) { el.innerHTML=`<tr><td colspan="5" class="empty">List is empty</td></tr>`; return; }
   el.innerHTML = rows.map(g => `
     <tr data-id="${g.id}" class="${g.status==='bought'?'done-row':''}">
@@ -512,7 +511,7 @@ async function renderSubs() {
   const total = rows.filter(s=>s.status==='active').reduce((a,s)=>a+(s.cost||0),0);
   const statEl = v('subs-stat');
   if (statEl) statEl.textContent = `${rows.filter(s=>s.status==='active').length} active · $${total.toFixed(2)}/mo`;
-  const el = v('subs-list');
+  const el = v('subs-list'); if (!el) return;
   if (!rows.length) { el.innerHTML=`<tr><td colspan="5" class="empty">No subscriptions yet</td></tr>`; return; }
   el.innerHTML = rows.map(s => `
     <tr data-id="${s.id}" class="${s.status==='paused'?'done-row':''}">
@@ -540,15 +539,15 @@ async function renderBudget() {
   const income = rows.filter(b=>b.type==='income').reduce((a,b)=>a+b.amount,0);
   const expense = rows.filter(b=>b.type==='expense').reduce((a,b)=>a+b.amount,0);
   const bal = income-expense;
-  v('b-income').textContent='$'+income.toFixed(2);
-  v('b-expense').textContent='$'+expense.toFixed(2);
-  v('b-balance').textContent=(bal>=0?'$':'-$')+Math.abs(bal).toFixed(2);
-  v('b-balance').style.color = bal>=0?'var(--lb-800)':'var(--red)';
   const pct = income>0?Math.min(100,Math.round(expense/income*100)):0;
-  v('b-bar').style.width=pct+'%';
-  v('b-bar').className='progress-fill'+(pct>90?' over':'');
-  v('b-pct').textContent=pct+'% of income spent';
+  const se = id => document.getElementById(id);
+  if(se('b-income')) se('b-income').textContent='$'+income.toFixed(2);
+  if(se('b-expense')) se('b-expense').textContent='$'+expense.toFixed(2);
+  if(se('b-balance')) { se('b-balance').textContent=(bal>=0?'$':'-$')+Math.abs(bal).toFixed(2); se('b-balance').style.color=bal>=0?'var(--lb-800)':'var(--red)'; }
+  if(se('b-bar')) { se('b-bar').style.width=pct+'%'; se('b-bar').className='progress-fill'+(pct>90?' over':''); }
+  if(se('b-pct')) se('b-pct').textContent=pct+'% of income spent';
   const el = v('budget-list');
+  if (!el) return;
   if (!rows.length) { el.innerHTML=`<tr><td colspan="6" class="empty">No entries yet</td></tr>`; return; }
   el.innerHTML = rows.map(b => `
     <tr data-id="${b.id}">
@@ -576,7 +575,7 @@ async function renderCar() {
   const rows = await dbSelect('car_maintenance','service_date');
   updateBadge('car', rows);
   setProgress('car', rows.filter(r=>r.status==='Done').length, rows.length);
-  const el = v('car-list');
+  const el = v('car-list'); if (!el) return;
   if (!rows.length) { el.innerHTML=`<tr><td colspan="8" class="empty">No maintenance tasks yet</td></tr>`; return; }
   const stC = {'Done':'status-done','Overdue':'priority-high','Pending':'status-todo'};
   el.innerHTML = rows.map(c => `
@@ -607,11 +606,13 @@ async function renderWorkout() {
   updateBadge('workout', rows);
   const total = rows.reduce((a,w)=>a+(w.duration_min||0),0);
   const thisMonth = rows.filter(w=>{ try{return new Date(w.workout_date).getMonth()===new Date().getMonth();}catch{return false;} }).length;
-  v('workout-stats').innerHTML = `
+  const statsEl = v('workout-stats');
+  if (statsEl) statsEl.innerHTML = `
     <div class="stat-card"><div class="stat-num">${rows.length}</div><div class="stat-lbl">Total sessions</div></div>
     <div class="stat-card"><div class="stat-num">${thisMonth}</div><div class="stat-lbl">This month</div></div>
     <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-lbl">Total minutes</div></div>`;
-  const el = v('workout-list');
+  const el = v('workout-list'); if (!el) return;
+  if (!el) return;
   if (!rows.length) { el.innerHTML='<div class="empty">No workouts logged yet</div>'; return; }
   el.innerHTML = rows.map(w=>`
     <div class="workout-card">
