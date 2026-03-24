@@ -48,6 +48,7 @@ function showDashboard() {
   document.getElementById('dashboard').style.display='block';
   document.getElementById('user-email-display').textContent = currentUser.email;
   setGreeting(); setDate(); loadDailyMsg(); loadSection(currentSection); loadAllBadges();
+  if (isMobile()) mobShowExtras();
 }
 
 (async () => {
@@ -73,10 +74,14 @@ function toggleDark() {
   const isDark = document.body.classList.contains('dark');
   document.getElementById('dark-label').textContent = isDark ? '☀️' : '🌙';
   localStorage.setItem('dash-dark', isDark ? '1' : '0');
+  syncMobDarkBtn();
 }
 if (localStorage.getItem('dash-dark') === '1') {
   document.body.classList.add('dark');
-  document.addEventListener('DOMContentLoaded', () => { const el = document.getElementById('dark-label'); if(el) el.textContent='☀️'; });
+  document.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById('dark-label');
+    if (el) el.textContent = '☀️';
+  });
 }
 
 // ── SIDEBAR COLLAPSE ──────────────────────────────────────────────────────
@@ -90,7 +95,9 @@ function nav(sec) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelector(`[onclick="nav('${sec}')"]`).classList.add('active');
   document.getElementById('sec-' + sec).classList.add('active');
-  currentSection = sec; loadSection(sec);
+  currentSection = sec;
+  loadSection(sec);
+  if (isMobile()) mobNavSync(sec);
 }
 
 // ── LOADING ───────────────────────────────────────────────────────────────
@@ -578,27 +585,19 @@ async function renderWorkout() {
 function isMobile() { return window.innerWidth <= 768; }
 
 // ── MOBILE NAV SYNC ───────────────────────────────────────────
-const _origNav = nav;
-function nav(sec) {
-  _origNav(sec);
-  if (isMobile()) {
-    document.querySelectorAll('.mob-nav-item').forEach(n => n.classList.remove('active'));
-    const mobItem = document.querySelector(`.mob-nav-item[onclick="nav('${sec}')"]`);
-    if (mobItem) mobItem.classList.add('active');
-    renderMobCards(sec);
-  }
+function mobNavSync(sec) {
+  document.querySelectorAll('.mob-nav-item').forEach(n => n.classList.remove('active'));
+  const mobItem = document.querySelector(`.mob-nav-item[onclick="nav('${sec}')"]`);
+  if (mobItem) mobItem.classList.add('active');
+  renderMobCards(sec);
 }
 
 // ── MOBILE SHOW DASHBOARD ─────────────────────────────────────
-const _origShow = showDashboard;
-function showDashboard() {
-  _origShow();
-  if (isMobile()) {
-    const gr = document.getElementById('mob-greeting');
-    if (gr) gr.textContent = document.getElementById('topbar-greeting').textContent;
-    syncMobDailyMsg();
-    renderMobCards(currentSection);
-  }
+function mobShowExtras() {
+  const gr = document.getElementById('mob-greeting');
+  if (gr) gr.textContent = document.getElementById('topbar-greeting').textContent;
+  syncMobDailyMsg();
+  renderMobCards(currentSection);
 }
 
 async function syncMobDailyMsg() {
@@ -612,9 +611,7 @@ async function saveMobDailyMsg() {
 }
 
 // ── DARK MODE SYNC ────────────────────────────────────────────
-const _origDark = toggleDark;
-function toggleDark() {
-  _origDark();
+function syncMobDarkBtn() {
   const isDark = document.body.classList.contains('dark');
   const btn = document.getElementById('mob-dark-btn');
   if (btn) btn.textContent = isDark ? '☀️' : '🌙';
@@ -975,7 +972,4 @@ function closeMobModal(e) {
 }
 
 // sync dark mode btn on init
-if (localStorage.getItem('dash-dark') === '1') {
-  const btn = document.getElementById('mob-dark-btn');
-  if (btn) btn.textContent = '☀️';
-}
+document.addEventListener('DOMContentLoaded', () => { syncMobDarkBtn(); });
