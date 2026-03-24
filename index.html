@@ -542,7 +542,23 @@ body.dark .dark-knob { transform: translateX(16px); }
 
 /* hide mobile elements on desktop */
 .mob-header, .mob-greeting, .mob-daily, .mob-cards,
-.mob-fab, .mob-modal-overlay, .mob-nav { display: none; }
+.mob-fab, .mob-modal-overlay, .mob-nav {
+  display: none !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .mob-header { display: flex !important; }
+  .mob-greeting { display: block !important; }
+  .mob-daily { display: block !important; }
+  .mob-cards { display: flex !important; flex-direction: column; }
+  .mob-fab { display: flex !important; }
+  .mob-modal-overlay.open { display: flex !important; }
+  .mob-nav { display: flex !important; }
+}
 
 </style>
 </head>
@@ -1056,8 +1072,8 @@ body.dark .dark-knob { transform: translateX(16px); }
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <script>
 // ── YOUR SUPABASE KEYS ──
-const SUPABASE_URL  = 'https://eclelgphgrovxcjmfnzk.supabase.co';
-const SUPABASE_ANON = 'sb_publishable_O8qxcB6ePC22dA6kUGBtxw_MXuf3Bou';
+const SUPABASE_URL  = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
   </script>
   <script>
 const { createClient } = supabase;
