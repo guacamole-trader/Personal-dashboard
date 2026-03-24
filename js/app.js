@@ -109,9 +109,13 @@ function today() { return new Date().toISOString().slice(0,10); }
 async function dbInsert(table, row) { const { error } = await db.from(table).insert({...row, user_id: uid()}); if(error) alert('Save error: '+error.message); }
 async function dbDelete(table, id) { const { error } = await db.from(table).delete().eq('id',id).eq('user_id',uid()); if(error) alert('Delete error: '+error.message); }
 async function dbUpdate(table, id, fields) { const { error } = await db.from(table).update(fields).eq('id',id).eq('user_id',uid()); if(error) alert('Update error: '+error.message); }
-async function dbSelect(table, order='created_at') {
-  const { data, error } = await db.from(table).select('*').eq('user_id',uid()).order(order,{ascending:false});
-  if(error) { console.error(error); return []; }
+async function dbSelect(table, fallbackOrder='created_at') {
+  const { data, error } = await db.from(table).select('*').eq('user_id',uid()).order('sort_order',{ascending:true, nullsFirst:false});
+  if (error) {
+    const { data: d2, error: e2 } = await db.from(table).select('*').eq('user_id',uid()).order(fallbackOrder,{ascending:false});
+    if (e2) { console.error(e2); return []; }
+    return d2 || [];
+  }
   return data || [];
 }
 
@@ -202,7 +206,56 @@ function exportCSV(sec) {
   a.download = sec+'-export.csv'; a.click();
 }
 
-// ── PROGRESS HELPER ───────────────────────────────────────────────────────
+// ── DRAG TO REORDER ───────────────────────────────────────────────────────
+const dragInstances = {};
+
+const sectionTables = {
+  todo:        'todos',
+  books:       'books',
+  videos:      'videos',
+  restaurants: 'restaurants',
+  travel:      'travel',
+  groceries:   'groceries',
+  subs:        'subscriptions',
+  budget:      'budget',
+  car:         'car_maintenance',
+  workout:     null
+};
+
+function initDrag(sec) {
+  const table = sectionTables[sec];
+  if (!table) return;
+  const tbody = document.querySelector('#table-'+sec+' tbody');
+  if (!tbody) return;
+
+  if (dragInstances[sec]) dragInstances[sec].destroy();
+
+  dragInstances[sec] = Sortable.create(tbody, {
+    animation: 150,
+    handle: '.drag-handle',
+    ghostClass: 'drag-ghost',
+    chosenClass: 'drag-chosen',
+    onEnd: async function(evt) {
+      const rows = Array.from(tbody.querySelectorAll('tr[data-id]'));
+      const updates = rows.map((row, idx) => ({
+        id: row.dataset.id,
+        sort_order: idx
+      }));
+      await Promise.all(updates.map(u =>
+        dbUpdate(table, u.id, { sort_order: u.sort_order })
+      ));
+      rows.forEach((row, idx) => {
+        row.style.background = '';
+        const even = idx % 2 === 1;
+        row.style.background = even ? '#f4f8fd' : '';
+      });
+    }
+  });
+}
+
+function dragHandle() {
+  return `<td class="drag-handle" title="Drag to reorder">⋮⋮</td>`;
+}
 function setProgress(sec, done, total) {
   const statEl = v(sec+'-stat');
   const barEl = v(sec+'-bar');
@@ -232,11 +285,12 @@ async function renderTodo() {
   updateBadge('todo', rows);
   setProgress('todo', rows.filter(r=>r.done).length, rows.length);
   const el = v('todo-list');
-  if (!rows.length) { el.innerHTML=`<tr><td colspan="7" class="empty">No tasks yet</td></tr>`; return; }
+  if (!rows.length) { el.innerHTML=`<tr><td colspan="8" class="empty">No tasks yet</td></tr>`; return; }
   const priC = {'High':'priority-high','Medium':'priority-medium','Low':'priority-low'};
   const stC = {'Done':'status-done','In progress':'status-progress','To do':'status-todo'};
   el.innerHTML = rows.map(t => `
-    <tr class="${t.done?'done-row':''}">
+    <tr data-id="${t.id}" class="${t.done?'done-row':''}">
+      ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${t.done?'checked':''} onchange="toggleTodo('${t.id}',${t.done})">${esc(t.text)}</div></td>
       <td class="${priC[t.priority]||''}">${esc(t.priority||'')}</td>
       <td>${esc(t.category||'')}</td>
@@ -245,6 +299,7 @@ async function renderTodo() {
       <td>${esc(t.note||'')}</td>
       <td>${delBtn(`deleteTodo('${t.id}')`)}</td>
     </tr>`).join('');
+  initDrag('todo');
 }
 
 // ── BOOKS ─────────────────────────────────────────────────────────────────
@@ -260,16 +315,18 @@ async function renderBooks() {
   updateBadge('books', rows);
   setProgress('books', rows.filter(r=>r.status==='Read').length, rows.length);
   const el = v('books-list');
-  if (!rows.length) { el.innerHTML=`<tr><td colspan="5" class="empty">No books yet</td></tr>`; return; }
+  if (!rows.length) { el.innerHTML=`<tr><td colspan="6" class="empty">No books yet</td></tr>`; return; }
   const stC = {'Read':'status-done','Reading':'status-progress','Want to read':'status-todo'};
   el.innerHTML = rows.map(b => `
-    <tr class="${b.status==='Read'?'done-row':''}">
+    <tr data-id="${b.id}" class="${b.status==='Read'?'done-row':''}">
+      ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${b.status==='Read'?'checked':''} onchange="toggleBook('${b.id}','${b.status}')">${esc(b.title)}</div></td>
       <td>${esc(b.author||'')}</td>
       <td>${esc(b.category||'')}</td>
       <td class="${stC[b.status]||''}">${esc(b.status||'')}</td>
       <td>${delBtn(`deleteBook('${b.id}')`)}</td>
     </tr>`).join('');
+  initDrag('books');
 }
 
 // ── VIDEOS ────────────────────────────────────────────────────────────────
@@ -285,16 +342,18 @@ async function renderVideos() {
   updateBadge('videos', rows);
   setProgress('videos', rows.filter(r=>r.status==='Done').length, rows.length);
   const el = v('videos-list');
-  if (!rows.length) { el.innerHTML=`<tr><td colspan="5" class="empty">No videos yet</td></tr>`; return; }
+  if (!rows.length) { el.innerHTML=`<tr><td colspan="6" class="empty">No videos yet</td></tr>`; return; }
   const stC = {'Done':'status-done','Watching':'status-progress','To watch':'status-todo'};
   el.innerHTML = rows.map(vd => `
-    <tr class="${vd.status==='Done'?'done-row':''}">
+    <tr data-id="${vd.id}" class="${vd.status==='Done'?'done-row':''}">
+      ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${vd.status==='Done'?'checked':''} onchange="toggleVideo('${vd.id}','${vd.status}')">${esc(vd.title)}</div></td>
       <td>${esc(vd.category||'')}</td>
       <td>${esc(vd.source||'')}</td>
       <td class="${stC[vd.status]||''}">${esc(vd.status||'')}</td>
       <td>${delBtn(`deleteVideo('${vd.id}')`)}</td>
     </tr>`).join('');
+  initDrag('videos');
 }
 
 // ── RESTAURANTS ───────────────────────────────────────────────────────────
@@ -310,10 +369,11 @@ async function renderRestaurants() {
   updateBadge('restaurants', rows);
   setProgress('restaurants', rows.filter(r=>r.status==='Tried'||r.status==='Favorite').length, rows.length);
   const el = v('restaurants-list');
-  if (!rows.length) { el.innerHTML=`<tr><td colspan="8" class="empty">No restaurants yet</td></tr>`; return; }
+  if (!rows.length) { el.innerHTML=`<tr><td colspan="9" class="empty">No restaurants yet</td></tr>`; return; }
   const stC = {'Favorite':'status-done','Tried':'status-progress','Want to try':'status-todo'};
   el.innerHTML = rows.map(r => `
-    <tr class="${r.status!=='Want to try'?'done-row':''}">
+    <tr data-id="${r.id}" class="${r.status!=='Want to try'?'done-row':''}">
+      ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${r.status!=='Want to try'?'checked':''} onchange="toggleRestaurant('${r.id}','${r.status}')">${esc(r.name)}</div></td>
       <td>${esc(r.cuisine||'')}</td>
       <td>${esc(r.location||'')}</td>
@@ -323,6 +383,7 @@ async function renderRestaurants() {
       <td>${esc(r.notes||'')}</td>
       <td>${delBtn(`deleteRestaurant('${r.id}')`)}</td>
     </tr>`).join('');
+  initDrag('restaurants');
 }
 
 // ── TRAVEL ────────────────────────────────────────────────────────────────
@@ -338,10 +399,11 @@ async function renderTravel() {
   updateBadge('travel', rows);
   setProgress('travel', rows.filter(r=>r.status==='Visited').length, rows.length);
   const el = v('travel-list');
-  if (!rows.length) { el.innerHTML=`<tr><td colspan="7" class="empty">No destinations yet</td></tr>`; return; }
+  if (!rows.length) { el.innerHTML=`<tr><td colspan="8" class="empty">No destinations yet</td></tr>`; return; }
   const stC = {'Visited':'status-done','Planned':'status-progress','Wish list':'status-todo'};
   el.innerHTML = rows.map(c => `
-    <tr class="${c.status==='Visited'?'done-row':''}">
+    <tr data-id="${c.id}" class="${c.status==='Visited'?'done-row':''}">
+      ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${c.status==='Visited'?'checked':''} onchange="toggleTravel('${c.id}','${c.status}')">${esc(c.city)}</div></td>
       <td>${esc(c.country||'')}</td>
       <td>${esc(c.continent||'')}</td>
@@ -350,6 +412,7 @@ async function renderTravel() {
       <td>${esc(c.notes||'')}</td>
       <td>${delBtn(`deleteTravel('${c.id}')`)}</td>
     </tr>`).join('');
+  initDrag('travel');
 }
 
 // ── GROCERIES ─────────────────────────────────────────────────────────────
@@ -372,14 +435,16 @@ async function renderGroceries() {
   const statEl = v('groceries-stat');
   if (statEl) statEl.textContent = `${bought} of ${rows.length} bought`;
   const el = v('groceries-list');
-  if (!rows.length) { el.innerHTML=`<tr><td colspan="4" class="empty">List is empty</td></tr>`; return; }
+  if (!rows.length) { el.innerHTML=`<tr><td colspan="5" class="empty">List is empty</td></tr>`; return; }
   el.innerHTML = rows.map(g => `
-    <tr class="${g.status==='bought'?'done-row':''}">
+    <tr data-id="${g.id}" class="${g.status==='bought'?'done-row':''}">
+      ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${g.status==='bought'?'checked':''} onchange="toggleGrocery('${g.id}','${g.status}')">${esc(g.item)}</div></td>
       <td>${esc(g.qty||'')}</td>
       <td class="${g.status==='bought'?'status-done':'status-todo'}">${g.status==='bought'?'Bought':'Need to buy'}</td>
       <td>${delBtn(`deleteGrocery('${g.id}')`)}</td>
     </tr>`).join('');
+  initDrag('groceries');
 }
 
 // ── SUBSCRIPTIONS ─────────────────────────────────────────────────────────
@@ -397,14 +462,16 @@ async function renderSubs() {
   const statEl = v('subs-stat');
   if (statEl) statEl.textContent = `${rows.filter(s=>s.status==='active').length} active · $${total.toFixed(2)}/mo`;
   const el = v('subs-list');
-  if (!rows.length) { el.innerHTML=`<tr><td colspan="4" class="empty">No subscriptions yet</td></tr>`; return; }
+  if (!rows.length) { el.innerHTML=`<tr><td colspan="5" class="empty">No subscriptions yet</td></tr>`; return; }
   el.innerHTML = rows.map(s => `
-    <tr class="${s.status==='paused'?'done-row':''}">
+    <tr data-id="${s.id}" class="${s.status==='paused'?'done-row':''}">
+      ${dragHandle()}
       <td>${esc(s.name)}</td>
       <td>$${(s.cost||0).toFixed(2)}/mo</td>
       <td class="${s.status==='active'?'status-done':'status-todo'}" style="cursor:pointer" onclick="toggleSub('${s.id}','${s.status}')">${s.status==='active'?'Active':'Paused'}</td>
       <td>${delBtn(`deleteSub('${s.id}')`)}</td>
     </tr>`).join('');
+  initDrag('subs');
 }
 
 // ── BUDGET ────────────────────────────────────────────────────────────────
@@ -433,7 +500,8 @@ async function renderBudget() {
   const el = v('budget-list');
   if (!rows.length) { el.innerHTML=`<tr><td colspan="6" class="empty">No entries yet</td></tr>`; return; }
   el.innerHTML = rows.map(b => `
-    <tr>
+    <tr data-id="${b.id}">
+      ${dragHandle()}
       <td>${esc(b.label)}</td>
       <td>${esc(b.category||'')}</td>
       <td>${b.entry_date||''}</td>
@@ -441,6 +509,7 @@ async function renderBudget() {
       <td style="font-weight:500;color:${b.type==='income'?'var(--green)':'var(--red)'}">${b.type==='income'?'+':'-'}$${b.amount.toFixed(2)}</td>
       <td>${delBtn(`deleteBudget('${b.id}')`)}</td>
     </tr>`).join('');
+  initDrag('budget');
 }
 
 // ── CAR MAINTENANCE ───────────────────────────────────────────────────────
@@ -460,7 +529,8 @@ async function renderCar() {
   if (!rows.length) { el.innerHTML=`<tr><td colspan="8" class="empty">No maintenance tasks yet</td></tr>`; return; }
   const stC = {'Done':'status-done','Overdue':'priority-high','Pending':'status-todo'};
   el.innerHTML = rows.map(c => `
-    <tr class="${c.status==='Done'?'done-row':''}">
+    <tr data-id="${c.id}" class="${c.status==='Done'?'done-row':''}">
+      ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${c.status==='Done'?'checked':''} onchange="toggleCar('${c.id}','${c.status}')">${esc(c.task)}</div></td>
       <td>${esc(c.car_type||'')}</td>
       <td>${c.service_date||''}</td>
@@ -470,6 +540,7 @@ async function renderCar() {
       <td>${esc(c.notes||'')}</td>
       <td>${delBtn(`deleteCar('${c.id}')`)}</td>
     </tr>`).join('');
+  initDrag('car');
 }
 
 // ── WORKOUT ───────────────────────────────────────────────────────────────
