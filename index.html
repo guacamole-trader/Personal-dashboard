@@ -50,7 +50,8 @@
         </div>
         <div class="nav-label">Sections</div>
         <nav>
-          <div class="nav-item active" onclick="nav('todo')"><span class="nav-icon">✓</span><span class="nav-text">To-do list</span><span class="nav-badge" id="badge-todo"></span></div>
+          <div class="nav-item active" onclick="nav('home')"><span class="nav-icon">🏠</span><span class="nav-text">Home</span></div>
+          <div class="nav-item" onclick="nav('todo')"><span class="nav-icon">✓</span><span class="nav-text">To-do list</span><span class="nav-badge" id="badge-todo"></span></div>
           <div class="nav-item" onclick="nav('books')"><span class="nav-icon">📖</span><span class="nav-text">Books</span><span class="nav-badge" id="badge-books"></span></div>
           <div class="nav-item" onclick="nav('videos')"><span class="nav-icon">▶</span><span class="nav-text">Videos</span><span class="nav-badge" id="badge-videos"></span></div>
           <div class="nav-item" onclick="nav('restaurants')"><span class="nav-icon">🍽</span><span class="nav-text">Restaurants</span><span class="nav-badge" id="badge-restaurants"></span></div>
@@ -69,8 +70,6 @@
 
       <!-- MAIN WRAPPER -->
       <div class="main-wrapper">
-
-        <!-- TOP BAR -->
         <div class="topbar">
           <div class="topbar-left">
             <div class="topbar-greeting" id="topbar-greeting">Good day!</div>
@@ -81,16 +80,39 @@
           </div>
           <div class="topbar-right">
             <span class="dark-label" id="dark-label">🌙</span>
-            <div class="dark-toggle" id="dark-toggle" onclick="toggleDark()"><div class="dark-knob" id="dark-knob"></div></div>
+            <div class="dark-toggle" onclick="toggleDark()"><div class="dark-knob"></div></div>
           </div>
         </div>
 
-        <!-- MAIN CONTENT -->
         <div class="main">
           <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div></div>
 
+          <!-- HOME -->
+          <div id="sec-home" class="section active">
+            <div class="section-header"><span class="section-title">Overview</span></div>
+            <div class="home-grid" id="home-grid"></div>
+            <div class="home-row">
+              <div class="home-panel">
+                <div class="home-panel-title">📋 Tasks due soon</div>
+                <div id="home-tasks"></div>
+              </div>
+              <div class="home-panel">
+                <div class="home-panel-title">💪 Recent workouts</div>
+                <div id="home-workouts"></div>
+              </div>
+              <div class="home-panel">
+                <div class="home-panel-title">🚗 Car maintenance</div>
+                <div id="home-car"></div>
+              </div>
+              <div class="home-panel">
+                <div class="home-panel-title">♻ Subscriptions</div>
+                <div id="home-subs"></div>
+              </div>
+            </div>
+          </div>
+
           <!-- TO-DO -->
-          <div id="sec-todo" class="section active">
+          <div id="sec-todo" class="section">
             <div class="section-header">
               <span class="section-title">To-do list</span>
               <div class="section-meta">
@@ -103,16 +125,7 @@
               <table class="todo-table" id="table-todo">
                 <thead>
                   <tr><th class="drag-th"></th><th onclick="sortTable('todo',1)">Task ↕</th><th onclick="sortTable('todo',2)">Priority ↕</th><th onclick="sortTable('todo',3)">Category ↕</th><th onclick="sortTable('todo',4)">Due date ↕</th><th onclick="sortTable('todo',5)">Status ↕</th><th>Note</th><th></th></tr>
-                  <tr class="add-row">
-                    <td></td>
-                    <td><input id="todo-task" placeholder="Task…"></td>
-                    <td><select id="todo-pri"><option value="High">High</option><option value="Medium" selected>Medium</option><option value="Low">Low</option></select></td>
-                    <td><input id="todo-cat" placeholder="Category…"></td>
-                    <td><input id="todo-due" type="date"></td>
-                    <td><select id="todo-status"><option value="To do">To do</option><option value="In progress">In progress</option><option value="Done">Done</option></select></td>
-                    <td><input id="todo-note" placeholder="Note…"></td>
-                    <td><button class="add-btn" onclick="addItem('todo')">+ Add</button></td>
-                  </tr>
+                  <tr class="add-row"><td></td><td><input id="todo-task" placeholder="Task…"></td><td><select id="todo-pri"><option value="High">High</option><option value="Medium" selected>Medium</option><option value="Low">Low</option></select></td><td><input id="todo-cat" placeholder="Category…"></td><td><input id="todo-due" type="date"></td><td><select id="todo-status"><option value="To do">To do</option><option value="In progress">In progress</option><option value="Done">Done</option></select></td><td><input id="todo-note" placeholder="Note…"></td><td><button class="add-btn" onclick="addItem('todo')">+ Add</button></td></tr>
                 </thead>
                 <tbody id="todo-list"></tbody>
               </table>
@@ -133,14 +146,7 @@
               <table class="todo-table" id="table-books">
                 <thead>
                   <tr><th class="drag-th"></th><th onclick="sortTable('books',1)">Title ↕</th><th onclick="sortTable('books',2)">Author ↕</th><th onclick="sortTable('books',3)">Category ↕</th><th onclick="sortTable('books',4)">Status ↕</th><th></th></tr>
-                  <tr class="add-row">
-                    <td></td>
-                    <td><input id="books-title" placeholder="Title…"></td>
-                    <td><input id="books-author" placeholder="Author…"></td>
-                    <td><select id="books-category"><option value="Health">Health</option><option value="Personal Growth">Personal Growth</option><option value="Music">Music</option><option value="Business">Business</option><option value="Finance">Finance</option><option value="Science">Science</option><option value="History">History</option><option value="Philosophy">Philosophy</option><option value="Psychology">Psychology</option><option value="Biography">Biography</option><option value="Fiction">Fiction</option><option value="Self-Help">Self-Help</option><option value="Spirituality">Spirituality</option><option value="Technology">Technology</option><option value="Other">Other</option></select></td>
-                    <td><select id="books-status"><option value="Want to read">Want to read</option><option value="Reading">Reading</option><option value="Read">Read</option></select></td>
-                    <td><button class="add-btn" onclick="addItem('books')">+ Add</button></td>
-                  </tr>
+                  <tr class="add-row"><td></td><td><input id="books-title" placeholder="Title…"></td><td><input id="books-author" placeholder="Author…"></td><td><select id="books-category"><option value="Health">Health</option><option value="Personal Growth">Personal Growth</option><option value="Music">Music</option><option value="Business">Business</option><option value="Finance">Finance</option><option value="Science">Science</option><option value="History">History</option><option value="Philosophy">Philosophy</option><option value="Psychology">Psychology</option><option value="Biography">Biography</option><option value="Fiction">Fiction</option><option value="Self-Help">Self-Help</option><option value="Spirituality">Spirituality</option><option value="Technology">Technology</option><option value="Other">Other</option></select></td><td><select id="books-status"><option value="Want to read">Want to read</option><option value="Reading">Reading</option><option value="Read">Read</option></select></td><td><button class="add-btn" onclick="addItem('books')">+ Add</button></td></tr>
                 </thead>
                 <tbody id="books-list"></tbody>
               </table>
@@ -161,14 +167,7 @@
               <table class="todo-table" id="table-videos">
                 <thead>
                   <tr><th class="drag-th"></th><th onclick="sortTable('videos',1)">Title ↕</th><th onclick="sortTable('videos',2)">Category ↕</th><th onclick="sortTable('videos',3)">Source ↕</th><th onclick="sortTable('videos',4)">Status ↕</th><th></th></tr>
-                  <tr class="add-row">
-                    <td></td>
-                    <td><input id="videos-title" placeholder="Title…"></td>
-                    <td><select id="videos-category"><option value="Health">Health</option><option value="Personal Growth">Personal Growth</option><option value="Music">Music</option><option value="Technology">Technology</option><option value="Science">Science</option><option value="Finance">Finance</option><option value="History">History</option><option value="Comedy">Comedy</option><option value="Motivation">Motivation</option><option value="Cooking">Cooking</option><option value="Travel">Travel</option><option value="Sports">Sports</option><option value="Documentary">Documentary</option><option value="Education">Education</option><option value="Other">Other</option></select></td>
-                    <td><input id="videos-source" placeholder="YouTube, Netflix…"></td>
-                    <td><select id="videos-status"><option value="To watch">To watch</option><option value="Watching">Watching</option><option value="Done">Done</option></select></td>
-                    <td><button class="add-btn" onclick="addItem('videos')">+ Add</button></td>
-                  </tr>
+                  <tr class="add-row"><td></td><td><input id="videos-title" placeholder="Title…"></td><td><select id="videos-category"><option value="Health">Health</option><option value="Personal Growth">Personal Growth</option><option value="Music">Music</option><option value="Technology">Technology</option><option value="Science">Science</option><option value="Finance">Finance</option><option value="History">History</option><option value="Comedy">Comedy</option><option value="Motivation">Motivation</option><option value="Cooking">Cooking</option><option value="Travel">Travel</option><option value="Sports">Sports</option><option value="Documentary">Documentary</option><option value="Education">Education</option><option value="Other">Other</option></select></td><td><input id="videos-source" placeholder="YouTube, Netflix…"></td><td><select id="videos-status"><option value="To watch">To watch</option><option value="Watching">Watching</option><option value="Done">Done</option></select></td><td><button class="add-btn" onclick="addItem('videos')">+ Add</button></td></tr>
                 </thead>
                 <tbody id="videos-list"></tbody>
               </table>
@@ -189,17 +188,7 @@
               <table class="todo-table" id="table-restaurants">
                 <thead>
                   <tr><th class="drag-th"></th><th onclick="sortTable('restaurants',1)">Name ↕</th><th onclick="sortTable('restaurants',2)">Cuisine ↕</th><th onclick="sortTable('restaurants',3)">Location ↕</th><th onclick="sortTable('restaurants',4)">Price ↕</th><th onclick="sortTable('restaurants',5)">Rating ↕</th><th onclick="sortTable('restaurants',6)">Status ↕</th><th>Notes</th><th></th></tr>
-                  <tr class="add-row">
-                    <td></td>
-                    <td><input id="restaurants-name" placeholder="Name…"></td>
-                    <td><select id="restaurants-cuisine"><option value="American">American</option><option value="Italian">Italian</option><option value="Mexican">Mexican</option><option value="Japanese">Japanese</option><option value="Chinese">Chinese</option><option value="Thai">Thai</option><option value="Indian">Indian</option><option value="Mediterranean">Mediterranean</option><option value="French">French</option><option value="Greek">Greek</option><option value="Korean">Korean</option><option value="Vietnamese">Vietnamese</option><option value="BBQ">BBQ</option><option value="Seafood">Seafood</option><option value="Steakhouse">Steakhouse</option><option value="Vegan">Vegan</option><option value="Other">Other</option></select></td>
-                    <td><input id="restaurants-location" placeholder="City…"></td>
-                    <td><select id="restaurants-price"><option value="$">$ Budget</option><option value="$$">$$ Mid-range</option><option value="$$$">$$$ Upscale</option><option value="$$$$">$$$$ Fine dining</option></select></td>
-                    <td><select id="restaurants-rating"><option value="">—</option><option value="⭐">⭐ 1</option><option value="⭐⭐">⭐⭐ 2</option><option value="⭐⭐⭐">⭐⭐⭐ 3</option><option value="⭐⭐⭐⭐">⭐⭐⭐⭐ 4</option><option value="⭐⭐⭐⭐⭐">⭐⭐⭐⭐⭐ 5</option></select></td>
-                    <td><select id="restaurants-status"><option value="Want to try">Want to try</option><option value="Tried">Tried</option><option value="Favorite">Favorite</option></select></td>
-                    <td><input id="restaurants-notes" placeholder="Notes…"></td>
-                    <td><button class="add-btn" onclick="addItem('restaurants')">+ Add</button></td>
-                  </tr>
+                  <tr class="add-row"><td></td><td><input id="restaurants-name" placeholder="Name…"></td><td><select id="restaurants-cuisine"><option value="American">American</option><option value="Italian">Italian</option><option value="Mexican">Mexican</option><option value="Japanese">Japanese</option><option value="Chinese">Chinese</option><option value="Thai">Thai</option><option value="Indian">Indian</option><option value="Mediterranean">Mediterranean</option><option value="French">French</option><option value="Greek">Greek</option><option value="Korean">Korean</option><option value="Vietnamese">Vietnamese</option><option value="BBQ">BBQ</option><option value="Seafood">Seafood</option><option value="Steakhouse">Steakhouse</option><option value="Vegan">Vegan</option><option value="Other">Other</option></select></td><td><input id="restaurants-location" placeholder="City…"></td><td><select id="restaurants-price"><option value="$">$ Budget</option><option value="$$">$$ Mid-range</option><option value="$$$">$$$ Upscale</option><option value="$$$$">$$$$ Fine dining</option></select></td><td><select id="restaurants-rating"><option value="">—</option><option value="⭐">⭐ 1</option><option value="⭐⭐">⭐⭐ 2</option><option value="⭐⭐⭐">⭐⭐⭐ 3</option><option value="⭐⭐⭐⭐">⭐⭐⭐⭐ 4</option><option value="⭐⭐⭐⭐⭐">⭐⭐⭐⭐⭐ 5</option></select></td><td><select id="restaurants-status"><option value="Want to try">Want to try</option><option value="Tried">Tried</option><option value="Favorite">Favorite</option></select></td><td><input id="restaurants-notes" placeholder="Notes…"></td><td><button class="add-btn" onclick="addItem('restaurants')">+ Add</button></td></tr>
                 </thead>
                 <tbody id="restaurants-list"></tbody>
               </table>
@@ -220,16 +209,7 @@
               <table class="todo-table" id="table-travel">
                 <thead>
                   <tr><th class="drag-th"></th><th onclick="sortTable('travel',1)">City / Destination ↕</th><th onclick="sortTable('travel',2)">Country ↕</th><th onclick="sortTable('travel',3)">Continent ↕</th><th onclick="sortTable('travel',4)">Type ↕</th><th onclick="sortTable('travel',5)">Status ↕</th><th>Notes</th><th></th></tr>
-                  <tr class="add-row">
-                    <td></td>
-                    <td><input id="travel-city" placeholder="City or destination…"></td>
-                    <td><input id="travel-country" placeholder="Country…"></td>
-                    <td><select id="travel-continent"><option value="North America">North America</option><option value="South America">South America</option><option value="Europe">Europe</option><option value="Asia">Asia</option><option value="Africa">Africa</option><option value="Oceania">Oceania</option><option value="Middle East">Middle East</option><option value="Caribbean">Caribbean</option></select></td>
-                    <td><select id="travel-type"><option value="Beach">Beach</option><option value="City">City</option><option value="Adventure">Adventure</option><option value="Cultural">Cultural</option><option value="Nature">Nature</option><option value="Road trip">Road trip</option><option value="Cruise">Cruise</option><option value="Other">Other</option></select></td>
-                    <td><select id="travel-status"><option value="Wish list">Wish list</option><option value="Planned">Planned</option><option value="Visited">Visited</option></select></td>
-                    <td><input id="travel-notes" placeholder="Notes…"></td>
-                    <td><button class="add-btn" onclick="addItem('travel')">+ Add</button></td>
-                  </tr>
+                  <tr class="add-row"><td></td><td><input id="travel-city" placeholder="City or destination…"></td><td><input id="travel-country" placeholder="Country…"></td><td><select id="travel-continent"><option value="North America">North America</option><option value="South America">South America</option><option value="Europe">Europe</option><option value="Asia">Asia</option><option value="Africa">Africa</option><option value="Oceania">Oceania</option><option value="Middle East">Middle East</option><option value="Caribbean">Caribbean</option></select></td><td><select id="travel-type"><option value="Beach">Beach</option><option value="City">City</option><option value="Adventure">Adventure</option><option value="Cultural">Cultural</option><option value="Nature">Nature</option><option value="Road trip">Road trip</option><option value="Cruise">Cruise</option><option value="Other">Other</option></select></td><td><select id="travel-status"><option value="Wish list">Wish list</option><option value="Planned">Planned</option><option value="Visited">Visited</option></select></td><td><input id="travel-notes" placeholder="Notes…"></td><td><button class="add-btn" onclick="addItem('travel')">+ Add</button></td></tr>
                 </thead>
                 <tbody id="travel-list"></tbody>
               </table>
@@ -250,14 +230,8 @@
             <div class="todo-table-wrap">
               <table class="todo-table" id="table-groceries">
                 <thead>
-                  <tr><th class="drag-th"></th><th onclick="sortTable('groceries',1)">Item ↕</th><th onclick="sortTable('groceries',2)">Qty ↕</th><th onclick="sortTable('groceries',3)">Status ↕</th><th></th></tr>
-                  <tr class="add-row">
-                    <td></td>
-                    <td><input id="groceries-item" placeholder="Item…"></td>
-                    <td><input id="groceries-qty" placeholder="Qty" style="max-width:80px"></td>
-                    <td><select id="groceries-status"><option value="need">Need to buy</option><option value="bought">Bought</option></select></td>
-                    <td><button class="add-btn" onclick="addItem('groceries')">+ Add</button></td>
-                  </tr>
+                  <tr><th class="drag-th"></th><th onclick="sortTable('groceries',1)">Item ↕</th><th onclick="sortTable('groceries',2)">Qty ↕</th><th onclick="sortTable('groceries',3)">Store ↕</th><th onclick="sortTable('groceries',4)">Status ↕</th><th></th></tr>
+                  <tr class="add-row"><td></td><td><input id="groceries-item" placeholder="Item…"></td><td><input id="groceries-qty" placeholder="Qty" style="max-width:80px"></td><td><input id="groceries-store" placeholder="Store (optional)…"></td><td><select id="groceries-status"><option value="need">Need to buy</option><option value="bought">Bought</option></select></td><td><button class="add-btn" onclick="addItem('groceries')">+ Add</button></td></tr>
                 </thead>
                 <tbody id="groceries-list"></tbody>
               </table>
@@ -273,18 +247,13 @@
                 <button class="action-btn" onclick="exportCSV('subs')">⬇ Export CSV</button>
               </div>
             </div>
+            <div class="subs-summary-grid" id="subs-summary"></div>
             <div class="search-row"><input class="search-input" id="search-subs" placeholder="Search subscriptions…" oninput="filterTable('subs')"/></div>
             <div class="todo-table-wrap">
               <table class="todo-table" id="table-subs">
                 <thead>
-                  <tr><th class="drag-th"></th><th onclick="sortTable('subs',1)">Service ↕</th><th onclick="sortTable('subs',2)">Cost/mo ↕</th><th onclick="sortTable('subs',3)">Status ↕</th><th></th></tr>
-                  <tr class="add-row">
-                    <td></td>
-                    <td><input id="subs-name" placeholder="Service name…"></td>
-                    <td><input id="subs-cost" placeholder="$/mo" type="number" min="0" step="0.01"></td>
-                    <td><select id="subs-status"><option value="active">Active</option><option value="paused">Paused</option></select></td>
-                    <td><button class="add-btn" onclick="addItem('subs')">+ Add</button></td>
-                  </tr>
+                  <tr><th class="drag-th"></th><th onclick="sortTable('subs',1)">Service ↕</th><th onclick="sortTable('subs',2)">Cost/mo ↕</th><th onclick="sortTable('subs',3)">Yearly cost ↕</th><th onclick="sortTable('subs',4)">Billing date ↕</th><th onclick="sortTable('subs',5)">Status ↕</th><th></th></tr>
+                  <tr class="add-row"><td></td><td><input id="subs-name" placeholder="Service name…"></td><td><input id="subs-cost" placeholder="$/mo" type="number" min="0" step="0.01"></td><td></td><td><input id="subs-billing" type="number" min="1" max="31" placeholder="Day (1-31)"></td><td><select id="subs-status"><option value="active">Active</option><option value="paused">Paused</option></select></td><td><button class="add-btn" onclick="addItem('subs')">+ Add</button></td></tr>
                 </thead>
                 <tbody id="subs-list"></tbody>
               </table>
@@ -305,20 +274,15 @@
               <div class="budget-card"><div class="budget-lbl">Balance</div><div class="budget-val balance" id="b-balance">$0.00</div></div>
               <div class="budget-card"><div class="budget-lbl">Spent vs income</div><div class="progress-bar"><div class="progress-fill" id="b-bar" style="width:0%"></div></div><div class="meta-info" id="b-pct" style="margin-top:4px">0%</div></div>
             </div>
+            <div class="budget-chart-wrap">
+              <canvas id="budget-chart" height="80"></canvas>
+            </div>
             <div class="search-row"><input class="search-input" id="search-budget" placeholder="Search entries…" oninput="filterTable('budget')"/></div>
             <div class="todo-table-wrap">
               <table class="todo-table" id="table-budget">
                 <thead>
                   <tr><th class="drag-th"></th><th onclick="sortTable('budget',1)">Description ↕</th><th onclick="sortTable('budget',2)">Category ↕</th><th onclick="sortTable('budget',3)">Date ↕</th><th onclick="sortTable('budget',4)">Type ↕</th><th onclick="sortTable('budget',5)">Amount ↕</th><th></th></tr>
-                  <tr class="add-row">
-                    <td></td>
-                    <td><input id="budget-label" placeholder="Description…"></td>
-                    <td><input id="budget-category" placeholder="Category…"></td>
-                    <td></td>
-                    <td><select id="budget-type"><option value="expense">Expense</option><option value="income">Income</option></select></td>
-                    <td><input id="budget-amount" placeholder="Amount" type="number" min="0" step="0.01"></td>
-                    <td><button class="add-btn" onclick="addItem('budget')">+ Add</button></td>
-                  </tr>
+                  <tr class="add-row"><td></td><td><input id="budget-label" placeholder="Description…"></td><td><input id="budget-category" placeholder="Category…"></td><td></td><td><select id="budget-type"><option value="expense">Expense</option><option value="income">Income</option></select></td><td><input id="budget-amount" placeholder="Amount" type="number" min="0" step="0.01"></td><td><button class="add-btn" onclick="addItem('budget')">+ Add</button></td></tr>
                 </thead>
                 <tbody id="budget-list"></tbody>
               </table>
@@ -339,17 +303,7 @@
               <table class="todo-table" id="table-car">
                 <thead>
                   <tr><th class="drag-th"></th><th onclick="sortTable('car',1)">Task ↕</th><th onclick="sortTable('car',2)">Type ↕</th><th onclick="sortTable('car',3)">Date ↕</th><th onclick="sortTable('car',4)">Mileage ↕</th><th onclick="sortTable('car',5)">Cost ↕</th><th onclick="sortTable('car',6)">Status ↕</th><th>Notes</th><th></th></tr>
-                  <tr class="add-row">
-                    <td></td>
-                    <td><input id="car-task" placeholder="e.g. Oil change…"></td>
-                    <td><select id="car-type"><option value="Oil change">Oil change</option><option value="Tire rotation">Tire rotation</option><option value="Tire replacement">Tire replacement</option><option value="Brake service">Brake service</option><option value="Battery">Battery</option><option value="Air filter">Air filter</option><option value="Alignment">Alignment</option><option value="Transmission">Transmission</option><option value="Inspection">Inspection</option><option value="Coolant flush">Coolant flush</option><option value="Windshield">Windshield</option><option value="AC service">AC service</option><option value="Other">Other</option></select></td>
-                    <td><input id="car-date" type="date"></td>
-                    <td><input id="car-miles" placeholder="Miles" type="number"></td>
-                    <td><input id="car-cost" placeholder="$" type="number" step="0.01"></td>
-                    <td><select id="car-status"><option value="Pending">Pending</option><option value="Done">Done</option><option value="Overdue">Overdue</option></select></td>
-                    <td><input id="car-notes" placeholder="Notes…"></td>
-                    <td><button class="add-btn" onclick="addItem('car')">+ Add</button></td>
-                  </tr>
+                  <tr class="add-row"><td></td><td><input id="car-task" placeholder="e.g. Oil change…"></td><td><select id="car-type"><option value="Oil change">Oil change</option><option value="Tire rotation">Tire rotation</option><option value="Tire replacement">Tire replacement</option><option value="Brake service">Brake service</option><option value="Battery">Battery</option><option value="Air filter">Air filter</option><option value="Alignment">Alignment</option><option value="Transmission">Transmission</option><option value="Inspection">Inspection</option><option value="Coolant flush">Coolant flush</option><option value="Windshield">Windshield</option><option value="AC service">AC service</option><option value="Other">Other</option></select></td><td><input id="car-date" type="date"></td><td><input id="car-miles" placeholder="Miles" type="number"></td><td><input id="car-cost" placeholder="$" type="number" step="0.01"></td><td><select id="car-status"><option value="Pending">Pending</option><option value="Done">Done</option><option value="Overdue">Overdue</option></select></td><td><input id="car-notes" placeholder="Notes…"></td><td><button class="add-btn" onclick="addItem('car')">+ Add</button></td></tr>
                 </thead>
                 <tbody id="car-list"></tbody>
               </table>
@@ -364,15 +318,16 @@
                 <button class="action-btn" onclick="exportCSV('workout')">⬇ Export CSV</button>
               </div>
             </div>
-            <div class="add-form">
-              <input id="workout-type" placeholder="Activity (e.g. Run, Gym)…">
-              <input id="workout-date" type="date">
-              <input id="workout-duration" placeholder="Duration (min)" type="number" style="max-width:130px">
-              <input id="workout-notes" placeholder="Notes (optional)">
-              <button class="add-btn" onclick="addItem('workout')">+ Log</button>
+            <div class="todo-table-wrap">
+              <table class="todo-table" id="table-workout">
+                <thead>
+                  <tr><th class="drag-th"></th><th onclick="sortTable('workout',1)">Activity ↕</th><th onclick="sortTable('workout',2)">Type ↕</th><th onclick="sortTable('workout',3)">Date ↕</th><th onclick="sortTable('workout',4)">Duration ↕</th><th onclick="sortTable('workout',5)">Streak ↕</th><th>Notes</th><th></th></tr>
+                  <tr class="add-row"><td></td><td><input id="workout-type" placeholder="e.g. Run, Gym…"></td><td><select id="workout-category"><option value="Cardio">Cardio</option><option value="Strength">Strength</option><option value="Flexibility">Flexibility</option><option value="Sports">Sports</option><option value="HIIT">HIIT</option><option value="Yoga">Yoga</option><option value="Swimming">Swimming</option><option value="Cycling">Cycling</option><option value="Other">Other</option></select></td><td><input id="workout-date" type="date"></td><td><input id="workout-duration" placeholder="Duration (min)" type="number" style="max-width:130px"></td><td></td><td><input id="workout-notes" placeholder="Notes (optional)"></td><td><button class="add-btn" onclick="addItem('workout')">+ Log</button></td></tr>
+                </thead>
+                <tbody id="workout-list"></tbody>
+              </table>
             </div>
-            <div id="workout-stats" class="stats-row"></div>
-            <div class="workout-grid" id="workout-list"></div>
+            <div id="workout-stats" class="stats-row" style="margin-top:1.5rem"></div>
           </div>
 
         </div><!-- end main -->
@@ -382,6 +337,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/app.js"></script>
 </body>
