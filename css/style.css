@@ -584,9 +584,10 @@ body.dark .dark-knob { transform: translateX(16px); }
   flex-direction: column;
 }
 .home-panel-body {
-  overflow-y: auto;
-  max-height: 200px;
+  overflow-y: scroll;
+  height: 180px;
   flex: 1;
+  padding-right: 4px;
 }
 .home-panel-title {
   font-size: 13px;
