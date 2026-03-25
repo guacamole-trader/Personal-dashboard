@@ -580,6 +580,13 @@ body.dark .dark-knob { transform: translateX(16px); }
   border: 0.5px solid var(--lb-100);
   border-radius: var(--radius-lg);
   padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+.home-panel-body {
+  overflow-y: auto;
+  max-height: 200px;
+  flex: 1;
 }
 .home-panel-title {
   font-size: 13px;
