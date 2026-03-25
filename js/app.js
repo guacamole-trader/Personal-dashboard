@@ -246,36 +246,35 @@ async function renderHome() {
     </div>`;
 
   // Tasks due soon
-  const dueSoon = todos.filter(t=>!t.done&&t.due_date).sort((a,b)=>new Date(a.due_date)-new Date(b.due_date)).slice(0,5);
-  document.getElementById('home-tasks').innerHTML = dueSoon.length ? dueSoon.map(t=>`
+  const dueSoon = todos.filter(t=>!t.done&&t.due_date).sort((a,b)=>new Date(a.due_date)-new Date(b.due_date)).slice(0,20);
+  document.getElementById('home-tasks').innerHTML = `<div class="home-panel-body">${dueSoon.length ? dueSoon.map(t=>`
     <div class="home-item">
       <div class="home-item-left"><span class="home-item-name">${esc(t.text)}</span></div>
-      <div class="home-item-right" style="color:${isOverdue(t.due_date)?'var(--red)':'var(--lb-600)'}">${isOverdue(t.due_date)?'⚠ ':''} ${t.due_date}</div>
-    </div>`).join('') : '<div class="home-empty">No upcoming tasks</div>';
+      <div class="home-item-right" style="color:${isOverdue(t.due_date)?'var(--red)':'var(--lb-600)'}">${isOverdue(t.due_date)?'⚠ ':''}${t.due_date}</div>
+    </div>`).join('') : '<div class="home-empty">No upcoming tasks</div>'}</div>`;
 
   // Recent workouts
-  const recentW = workouts.slice(0,5);
-  document.getElementById('home-workouts').innerHTML = recentW.length ? recentW.map(w=>`
+  const recentW = workouts.slice(0,20);
+  document.getElementById('home-workouts').innerHTML = `<div class="home-panel-body">${recentW.length ? recentW.map(w=>`
     <div class="home-item">
       <div class="home-item-left"><span class="home-item-name">${esc(w.type)}${w.workout_category?' · '+esc(w.workout_category):''}</span></div>
       <div class="home-item-right">${w.duration_min?w.duration_min+' min':''} ${w.workout_date||''}</div>
-    </div>`).join('') : '<div class="home-empty">No workouts logged yet</div>';
+    </div>`).join('') : '<div class="home-empty">No workouts logged yet</div>'}</div>`;
 
   // Car maintenance
-  const pendingCar = car.filter(c=>c.status!=='Done').slice(0,5);
-  document.getElementById('home-car').innerHTML = pendingCar.length ? pendingCar.map(c=>`
+  const pendingCar = car.filter(c=>c.status!=='Done');
+  document.getElementById('home-car').innerHTML = `<div class="home-panel-body">${pendingCar.length ? pendingCar.map(c=>`
     <div class="home-item">
       <div class="home-item-left"><span class="home-item-name">${esc(c.task)}</span></div>
       <div class="home-item-right" style="color:${c.status==='Overdue'?'var(--red)':'var(--lb-600)'}">${esc(c.status)}</div>
-    </div>`).join('') : '<div class="home-empty">All caught up! ✓</div>';
+    </div>`).join('') : '<div class="home-empty">All caught up! ✓</div>'}</div>`;
 
   // Subscriptions
-  const upcomingSubs = activeSubs.slice(0,5);
-  document.getElementById('home-subs').innerHTML = upcomingSubs.length ? upcomingSubs.map(s=>`
+  document.getElementById('home-subs').innerHTML = `<div class="home-panel-body">${activeSubs.length ? activeSubs.map(s=>`
     <div class="home-item">
       <div class="home-item-left"><span class="home-item-name">${esc(s.name)}</span></div>
       <div class="home-item-right">$${(s.cost||0).toFixed(2)}/mo${s.billing_date?' · day '+s.billing_date:''}</div>
-    </div>`).join('') : '<div class="home-empty">No active subscriptions</div>';
+    </div>`).join('') : '<div class="home-empty">No active subscriptions</div>'}</div>`;
 }
 
 // ── TO-DO ─────────────────────────────────────────────────────────────────
