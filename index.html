@@ -57,10 +57,11 @@
           <div class="nav-item" onclick="nav('restaurants')"><span class="nav-icon">🍽</span><span class="nav-text">Restaurants</span><span class="nav-badge" id="badge-restaurants"></span></div>
           <div class="nav-item" onclick="nav('travel')"><span class="nav-icon">✈</span><span class="nav-text">Travel</span><span class="nav-badge" id="badge-travel"></span></div>
           <div class="nav-item" onclick="nav('groceries')"><span class="nav-icon">🛒</span><span class="nav-text">Groceries</span><span class="nav-badge" id="badge-groceries"></span></div>
-          <div class="nav-item" onclick="nav('subs')"><span class="nav-icon">♻</span><span class="nav-text">Subscriptions</span><span class="nav-badge" id="badge-subs"></span></div>
+          <div class="nav-item" onclick="nav('subs')"><span class="nav-icon">♻</span><span class="nav-text">Recurrent Payments</span><span class="nav-badge" id="badge-subs"></span></div>
           <div class="nav-item" onclick="nav('budget')"><span class="nav-icon">$</span><span class="nav-text">Budget</span><span class="nav-badge" id="badge-budget"></span></div>
           <div class="nav-item" onclick="nav('car')"><span class="nav-icon">🚗</span><span class="nav-text">Car maintenance</span><span class="nav-badge" id="badge-car"></span></div>
           <div class="nav-item" onclick="nav('workout')"><span class="nav-icon">💪</span><span class="nav-text">Workout log</span><span class="nav-badge" id="badge-workout"></span></div>
+          <div class="nav-item" onclick="nav('journal')"><span class="nav-icon">📓</span><span class="nav-text">Journal</span><span class="nav-badge" id="badge-journal"></span></div>
         </nav>
         <div class="sidebar-bottom">
           <span id="user-email-display"></span>
@@ -105,7 +106,7 @@
                 <div id="home-car"></div>
               </div>
               <div class="home-panel">
-                <div class="home-panel-title">♻ Subscriptions</div>
+                <div class="home-panel-title">♻ Recurrent Payments</div>
                 <div id="home-subs"></div>
               </div>
             </div>
@@ -241,19 +242,19 @@
           <!-- SUBSCRIPTIONS -->
           <div id="sec-subs" class="section">
             <div class="section-header">
-              <span class="section-title">Subscriptions</span>
+              <span class="section-title">Recurrent Payments</span>
               <div class="section-meta">
                 <span class="meta-stat" id="subs-stat"></span>
                 <button class="action-btn" onclick="exportCSV('subs')">⬇ Export CSV</button>
               </div>
             </div>
             <div class="subs-summary-grid" id="subs-summary"></div>
-            <div class="search-row"><input class="search-input" id="search-subs" placeholder="Search subscriptions…" oninput="filterTable('subs')"/></div>
+            <div class="search-row"><input class="search-input" id="search-subs" placeholder="Search payments…" oninput="filterTable('subs')"/></div>
             <div class="todo-table-wrap">
               <table class="todo-table" id="table-subs">
                 <thead>
-                  <tr><th class="drag-th"></th><th onclick="sortTable('subs',1)">Service ↕</th><th onclick="sortTable('subs',2)">Cost/mo ↕</th><th onclick="sortTable('subs',3)">Yearly cost ↕</th><th onclick="sortTable('subs',4)">Billing date ↕</th><th onclick="sortTable('subs',5)">Status ↕</th><th></th></tr>
-                  <tr class="add-row"><td></td><td><input id="subs-name" placeholder="Service name…"></td><td><input id="subs-cost" placeholder="$/mo" type="number" min="0" step="0.01"></td><td></td><td><input id="subs-billing" type="number" min="1" max="31" placeholder="Day (1-31)"></td><td><select id="subs-status"><option value="active">Active</option><option value="paused">Paused</option></select></td><td><button class="add-btn" onclick="addItem('subs')">+ Add</button></td></tr>
+                  <tr><th class="drag-th"></th><th onclick="sortTable('subs',1)">Service ↕</th><th onclick="sortTable('subs',2)">Type ↕</th><th onclick="sortTable('subs',3)">Cost/mo ↕</th><th onclick="sortTable('subs',4)">Yearly cost ↕</th><th onclick="sortTable('subs',5)">Billing date ↕</th><th onclick="sortTable('subs',6)">Status ↕</th><th></th></tr>
+                  <tr class="add-row"><td></td><td><input id="subs-name" placeholder="Service name…"></td><td><select id="subs-type"><option value="Subscription">Subscription</option><option value="Internet / Phone">Internet / Phone</option><option value="Soccer / Sports league">Soccer / Sports league</option><option value="Insurance">Insurance</option><option value="Rent / Mortgage">Rent / Mortgage</option><option value="Utilities">Utilities</option><option value="Gym / Fitness">Gym / Fitness</option><option value="Streaming">Streaming</option><option value="Software / Apps">Software / Apps</option><option value="Other">Other</option></select></td><td><input id="subs-cost" placeholder="$/mo" type="number" min="0" step="0.01"></td><td></td><td><input id="subs-billing" type="number" min="1" max="31" placeholder="Day (1-31)"></td><td><select id="subs-status"><option value="active">Active</option><option value="paused">Paused</option></select></td><td><button class="add-btn" onclick="addItem('subs')">+ Add</button></td></tr>
                 </thead>
                 <tbody id="subs-list"></tbody>
               </table>
@@ -328,6 +329,69 @@
               </table>
             </div>
             <div id="workout-stats" class="stats-row" style="margin-top:1.5rem"></div>
+          </div>
+
+          <!-- JOURNAL -->
+          <div id="sec-journal" class="section">
+            <div class="section-header">
+              <span class="section-title">Journal</span>
+              <div class="section-meta">
+                <span class="meta-stat" id="journal-stat"></span>
+                <button class="action-btn" onclick="addTodayEntry()">✏ Write today</button>
+                <button class="action-btn" onclick="exportJournalCSV()">⬇ Export CSV</button>
+              </div>
+            </div>
+            <div id="journal-mood-summary"></div>
+            <div class="search-row">
+              <input class="search-input" id="search-journal" placeholder="Search entries…" oninput="filterJournal()"/>
+            </div>
+            <!-- ADD FORM -->
+            <div class="journal-add-form" id="journal-add-form" style="display:none">
+              <div class="journal-add-header">
+                <span class="journal-add-title" id="journal-form-title">New entry</span>
+                <button class="action-btn" onclick="closeJournalForm()">✕ Cancel</button>
+              </div>
+              <div class="journal-form-grid">
+                <div class="journal-form-row">
+                  <div class="jf-field"><label>Date</label><input type="date" id="journal-date"/></div>
+                  <div class="jf-field"><label>Title</label><input type="text" id="journal-title" placeholder="What's on your mind?"/></div>
+                  <div class="jf-field"><label>Mood</label>
+                    <select id="journal-mood">
+                      <option value="😊 Great">😊 Great</option>
+                      <option value="🙂 Good" selected>🙂 Good</option>
+                      <option value="😐 Neutral">😐 Neutral</option>
+                      <option value="😔 Stressed">😔 Stressed</option>
+                      <option value="😴 Tired">😴 Tired</option>
+                      <option value="😤 Frustrated">😤 Frustrated</option>
+                      <option value="🤩 Excited">🤩 Excited</option>
+                      <option value="😢 Sad">😢 Sad</option>
+                    </select>
+                  </div>
+                  <div class="jf-field"><label>Category</label>
+                    <select id="journal-category">
+                      <option value="Personal">Personal</option>
+                      <option value="Work">Work</option>
+                      <option value="Health">Health</option>
+                      <option value="Gratitude">Gratitude</option>
+                      <option value="Goals">Goals</option>
+                      <option value="Ideas">Ideas</option>
+                      <option value="Travel">Travel</option>
+                      <option value="Reflection">Reflection</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="jf-field jf-full">
+                  <label>Entry</label>
+                  <textarea id="journal-entry" placeholder="Write your thoughts here…" rows="6"></textarea>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn-primary" style="max-width:160px;padding:8px" onclick="saveJournalEntry()">Save entry</button>
+              </div>
+            </div>
+            <!-- ENTRIES LIST -->
+            <div class="journal-list" id="journal-list"></div>
           </div>
 
         </div><!-- end main -->
