@@ -491,7 +491,7 @@ async function renderGroceries() {
 // ── SUBSCRIPTIONS ─────────────────────────────────────────────────────────
 async function addSub() {
   const name=val('subs-name'); if(!name)return;
-  await dbInsert('subscriptions',{name,cost:parseFloat(v('subs-cost').value)||0,billing_date:parseInt(v('subs-billing').value)||null,status:val('subs-status')});
+  await dbInsert('subscriptions',{name,payment_type:val('subs-type'),cost:parseFloat(v('subs-cost').value)||0,billing_date:parseInt(v('subs-billing').value)||null,status:val('subs-status')});
   clr('subs-name','subs-cost','subs-billing'); await renderSubs();
 }
 async function toggleSub(id,status){await dbUpdate('subscriptions',id,{status:status==='active'?'paused':'active'});await renderSubs();}
@@ -508,11 +508,12 @@ async function renderSubs() {
     <div class="subs-summary-card"><div class="subs-summary-lbl">Monthly total</div><div class="subs-summary-val">$${total.toFixed(2)}</div></div>
     <div class="subs-summary-card"><div class="subs-summary-lbl">Yearly total</div><div class="subs-summary-val">$${(total*12).toFixed(2)}</div></div>`;
   const el=v('subs-list'); if(!el)return;
-  if(!rows.length){el.innerHTML=`<tr><td colspan="7" class="empty">No subscriptions yet</td></tr>`;return;}
+  if(!rows.length){el.innerHTML=`<tr><td colspan="8" class="empty">No recurrent payments yet</td></tr>`;return;}
   el.innerHTML=rows.map(s=>`
     <tr data-id="${s.id}" class="${s.status==='paused'?'done-row':''}">
       ${dragHandle()}
       <td onclick="editCell(this,'subscriptions','${s.id}','name','text')" title="Click to edit">${esc(s.name)}</td>
+      <td onclick="editCell(this,'subscriptions','${s.id}','payment_type','select',['Subscription','Internet / Phone','Soccer / Sports league','Insurance','Rent / Mortgage','Utilities','Gym / Fitness','Streaming','Software / Apps','Other'])" title="Click to edit">${esc(s.payment_type||'')}</td>
       <td onclick="editCell(this,'subscriptions','${s.id}','cost','number')" title="Click to edit">$${(s.cost||0).toFixed(2)}/mo</td>
       <td>$${((s.cost||0)*12).toFixed(2)}/yr</td>
       <td onclick="editCell(this,'subscriptions','${s.id}','billing_date','number')" title="Click to edit">${s.billing_date?'Day '+s.billing_date:''}</td>
