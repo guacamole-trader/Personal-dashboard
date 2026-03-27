@@ -233,10 +233,11 @@ function editCell(td, table, id, field, type, options) {
 // ── HOME SCREEN ───────────────────────────────────────────────────────────
 async function renderHome() {
   // Fetch all data in parallel
-  const [todos, books, videos, subs, budget, car, workouts, groceries, travel, restaurants] = await Promise.all([
+  const [todos, books, videos, subs, budget, car, workouts, groceries, travel, restaurants, journal] = await Promise.all([
     dbSelect('todos','created_at'), dbSelect('books','title'), dbSelect('videos','title'),
     dbSelect('subscriptions','name'), dbSelect('budget','entry_date'), dbSelect('car_maintenance','service_date'),
-    dbSelect('workouts','workout_date'), dbSelect('groceries','item'), dbSelect('travel','city'), dbSelect('restaurants','name')
+    dbSelect('workouts','workout_date'), dbSelect('groceries','item'), dbSelect('travel','city'), dbSelect('restaurants','name'),
+    dbSelect('journal','entry_date')
   ]);
 
   // Summary cards
@@ -263,7 +264,7 @@ async function renderHome() {
     <div class="home-stat" onclick="nav('subs')">
       <div class="home-stat-icon">♻</div>
       <div class="home-stat-num">${activeSubs.length}</div>
-      <div class="home-stat-label">Active subscriptions</div>
+      <div class="home-stat-label">Recurrent Payments</div>
       <div class="home-stat-sub">$${subTotal.toFixed(2)}/mo · $${(subTotal*12).toFixed(0)}/yr</div>
     </div>
     <div class="home-stat" onclick="nav('books')">
@@ -290,11 +291,11 @@ async function renderHome() {
       <div class="home-stat-label">Car tasks pending</div>
       <div class="home-stat-sub">${car.filter(c=>c.status==='Done').length} completed</div>
     </div>
-    <div class="home-stat" onclick="nav('workout')">
-      <div class="home-stat-icon">💪</div>
-      <div class="home-stat-num">${workouts.filter(w=>{try{return new Date(w.workout_date).getMonth()===new Date().getMonth();}catch{return false;}}).length}</div>
-      <div class="home-stat-label">Workouts this month</div>
-      <div class="home-stat-sub">${workouts.reduce((a,w)=>a+(w.duration_min||0),0)} total minutes logged</div>
+    <div class="home-stat" onclick="nav('journal')">
+      <div class="home-stat-icon">📓</div>
+      <div class="home-stat-num">${journal.filter(j=>{ try{return new Date(j.entry_date).getMonth()===new Date().getMonth();}catch{return false;} }).length}</div>
+      <div class="home-stat-label">Journal entries this month</div>
+      <div class="home-stat-sub">${journal.length} total entries</div>
     </div>`;
 
   // Tasks due soon
@@ -326,7 +327,7 @@ async function renderHome() {
     <div class="home-item">
       <div class="home-item-left"><span class="home-item-name">${esc(s.name)}</span></div>
       <div class="home-item-right">$${(s.cost||0).toFixed(2)}/mo${s.billing_date?' · day '+s.billing_date:''}</div>
-    </div>`).join('') : '<div class="home-empty">No active subscriptions</div>'}</div>`;
+    </div>`).join('') : '<div class="home-empty">No active recurrent payments</div>'}</div>`;
 }
 
 // ── TO-DO ─────────────────────────────────────────────────────────────────
