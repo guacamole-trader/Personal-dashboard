@@ -94,7 +94,7 @@ async function dbSelect(table,fallbackOrder='created_at') {
 async function loadSection(sec) {
   setLoading(true);
   try {
-    const fn={home:renderHome,todo:renderTodo,books:renderBooks,travel:renderTravel,subs:renderSubs,restaurants:renderRestaurants,budget:renderBudget,car:renderCar,videos:renderVideos,groceries:renderGroceries,workout:renderWorkout};
+    const fn={home:renderHome,todo:renderTodo,books:renderBooks,travel:renderTravel,subs:renderSubs,restaurants:renderRestaurants,budget:renderBudget,car:renderCar,videos:renderVideos,groceries:renderGroceries,workout:renderWorkout,journal:renderJournal};
     if(fn[sec])await fn[sec]();
   } finally { setLoading(false); }
 }
@@ -105,7 +105,7 @@ async function addItem(sec) {
 
 // ── BADGES ────────────────────────────────────────────────────────────────
 async function loadAllBadges() {
-  const tables={todo:'todos',books:'books',videos:'videos',restaurants:'restaurants',travel:'travel',groceries:'groceries',subs:'subscriptions',budget:'budget',car:'car_maintenance',workout:'workouts'};
+  const tables={todo:'todos',books:'books',videos:'videos',restaurants:'restaurants',travel:'travel',groceries:'groceries',subs:'subscriptions',budget:'budget',car:'car_maintenance',workout:'workouts',journal:'journal'};
   for(const [sec,table] of Object.entries(tables)){
     const {count}=await db.from(table).select('*',{count:'exact',head:true}).eq('user_id',uid());
     const el=document.getElementById('badge-'+sec); if(el)el.textContent=count||'';
@@ -176,6 +176,58 @@ function initDrag(sec) {
   dragInstances[sec]=Sortable.create(tbody,{animation:150,handle:'.drag-handle',ghostClass:'drag-ghost',chosenClass:'drag-chosen',
     onEnd:async()=>{ const rows=Array.from(tbody.querySelectorAll('tr[data-id]')); await Promise.all(rows.map((row,idx)=>dbUpdate(table,row.dataset.id,{sort_order:idx}))); }
   });
+}
+
+// ── INLINE EDITING ────────────────────────────────────────────────────────
+// editCell(td, table, id, field, type, options)
+// type: 'text' | 'select' | 'date' | 'number'
+// options: array of strings for select type
+function editCell(td, table, id, field, type, options) {
+  if (td.querySelector('input,select')) return; // already editing
+  const original = td.dataset.value || td.textContent.trim();
+  td.dataset.value = original;
+
+  let input;
+  if (type === 'select') {
+    input = document.createElement('select');
+    input.style.cssText = 'width:100%;font-size:12px;padding:3px 6px;border:0.5px solid var(--lb-400);border-radius:4px;background:var(--white);color:#1a1a1a;outline:none;';
+    options.forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt; o.textContent = opt;
+      if (opt === original) o.selected = true;
+      input.appendChild(o);
+    });
+  } else {
+    input = document.createElement('input');
+    input.type = type || 'text';
+    input.value = original;
+    input.style.cssText = 'width:100%;font-size:12px;padding:3px 6px;border:0.5px solid var(--lb-400);border-radius:4px;background:var(--white);color:#1a1a1a;outline:none;';
+  }
+
+  const prev = td.innerHTML;
+  td.innerHTML = '';
+  td.appendChild(input);
+  input.focus();
+  if (type === 'text') input.select();
+
+  async function save() {
+    const newVal = input.value.trim();
+    if (newVal === original) { td.innerHTML = prev; return; }
+    td.innerHTML = newVal;
+    td.dataset.value = newVal;
+    const update = {};
+    update[field] = type === 'number' ? (parseFloat(newVal) || 0) : (newVal || null);
+    await dbUpdate(table, id, update);
+    // Reload section to sync all state (progress, badges, status colors)
+    await loadSection(currentSection);
+  }
+
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { td.innerHTML = prev; input.removeEventListener('blur', save); }
+  });
+  if (type === 'select') input.addEventListener('change', () => input.blur());
 }
 
 // ── HOME SCREEN ───────────────────────────────────────────────────────────
@@ -295,11 +347,11 @@ async function renderTodo() {
     <tr data-id="${t.id}" class="${t.done?'done-row':''}">
       ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${t.done?'checked':''} onchange="toggleTodo('${t.id}',${t.done})">${esc(t.text)}</div></td>
-      <td class="${priC[t.priority]||''}">${esc(t.priority||'')}</td>
-      <td>${esc(t.category||'')}</td>
-      <td class="${isOverdue(t.due_date)&&!t.done?'overdue-date':''}">${t.due_date||''}${isOverdue(t.due_date)&&!t.done?' ⚠':''}</td>
-      <td class="${stC[t.status]||''}">${esc(t.status||'')}</td>
-      <td>${esc(t.note||'')}</td>
+      <td class="${priC[t.priority]||''}" onclick="editCell(this,'todos','${t.id}','priority','select',['High','Medium','Low'])" title="Click to edit">${esc(t.priority||'')}</td>
+      <td onclick="editCell(this,'todos','${t.id}','category','text')" title="Click to edit">${esc(t.category||'')}</td>
+      <td class="${isOverdue(t.due_date)&&!t.done?'overdue-date':''}" onclick="editCell(this,'todos','${t.id}','due_date','date')" title="Click to edit">${t.due_date||''}${isOverdue(t.due_date)&&!t.done?' ⚠':''}</td>
+      <td class="${stC[t.status]||''}" onclick="editCell(this,'todos','${t.id}','status','select',['To do','In progress','Done'])" title="Click to edit">${esc(t.status||'')}</td>
+      <td onclick="editCell(this,'todos','${t.id}','note','text')" title="Click to edit">${esc(t.note||'')}</td>
       <td>${delBtn(`deleteTodo('${t.id}')`)}</td>
     </tr>`).join('');
   initDrag('todo');
@@ -322,9 +374,9 @@ async function renderBooks() {
     <tr data-id="${b.id}" class="${b.status==='Read'?'done-row':''}">
       ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${b.status==='Read'?'checked':''} onchange="toggleBook('${b.id}','${b.status}')">${esc(b.title)}</div></td>
-      <td>${esc(b.author||'')}</td>
-      <td>${esc(b.category||'')}</td>
-      <td class="${stC[b.status]||''}">${esc(b.status||'')}</td>
+      <td onclick="editCell(this,'books','${b.id}','author','text')" title="Click to edit">${esc(b.author||'')}</td>
+      <td onclick="editCell(this,'books','${b.id}','category','select',['Health','Personal Growth','Music','Business','Finance','Science','History','Philosophy','Psychology','Biography','Fiction','Self-Help','Spirituality','Technology','Other'])" title="Click to edit">${esc(b.category||'')}</td>
+      <td class="${stC[b.status]||''}" onclick="editCell(this,'books','${b.id}','status','select',['Want to read','Reading','Read'])" title="Click to edit">${esc(b.status||'')}</td>
       <td>${delBtn(`deleteBook('${b.id}')`)}</td>
     </tr>`).join('');
   initDrag('books');
@@ -347,9 +399,9 @@ async function renderVideos() {
     <tr data-id="${vd.id}" class="${vd.status==='Done'?'done-row':''}">
       ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${vd.status==='Done'?'checked':''} onchange="toggleVideo('${vd.id}','${vd.status}')">${esc(vd.title)}</div></td>
-      <td>${esc(vd.category||'')}</td>
-      <td>${esc(vd.source||'')}</td>
-      <td class="${stC[vd.status]||''}">${esc(vd.status||'')}</td>
+      <td onclick="editCell(this,'videos','${vd.id}','category','select',['Health','Personal Growth','Music','Technology','Science','Finance','History','Comedy','Motivation','Cooking','Travel','Sports','Documentary','Education','Other'])" title="Click to edit">${esc(vd.category||'')}</td>
+      <td onclick="editCell(this,'videos','${vd.id}','source','text')" title="Click to edit">${esc(vd.source||'')}</td>
+      <td class="${stC[vd.status]||''}" onclick="editCell(this,'videos','${vd.id}','status','select',['To watch','Watching','Done'])" title="Click to edit">${esc(vd.status||'')}</td>
       <td>${delBtn(`deleteVideo('${vd.id}')`)}</td>
     </tr>`).join('');
   initDrag('videos');
@@ -372,12 +424,12 @@ async function renderRestaurants() {
     <tr data-id="${r.id}" class="${r.status!=='Want to try'?'done-row':''}">
       ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${r.status!=='Want to try'?'checked':''} onchange="toggleRestaurant('${r.id}','${r.status}')">${esc(r.name)}</div></td>
-      <td>${esc(r.cuisine||'')}</td>
-      <td>${esc(r.location||'')}</td>
-      <td>${esc(r.price_range||'')}</td>
-      <td>${esc(r.rating||'')}</td>
-      <td class="${stC[r.status]||''}">${esc(r.status||'')}</td>
-      <td>${esc(r.notes||'')}</td>
+      <td onclick="editCell(this,'restaurants','${r.id}','cuisine','select',['American','Italian','Mexican','Japanese','Chinese','Thai','Indian','Mediterranean','French','Greek','Korean','Vietnamese','BBQ','Seafood','Steakhouse','Vegan','Other'])" title="Click to edit">${esc(r.cuisine||'')}</td>
+      <td onclick="editCell(this,'restaurants','${r.id}','location','text')" title="Click to edit">${esc(r.location||'')}</td>
+      <td onclick="editCell(this,'restaurants','${r.id}','price_range','select',['$','$$','$$$','$$$$'])" title="Click to edit">${esc(r.price_range||'')}</td>
+      <td onclick="editCell(this,'restaurants','${r.id}','rating','select',['','⭐','⭐⭐','⭐⭐⭐','⭐⭐⭐⭐','⭐⭐⭐⭐⭐'])" title="Click to edit">${esc(r.rating||'')}</td>
+      <td class="${stC[r.status]||''}" onclick="editCell(this,'restaurants','${r.id}','status','select',['Want to try','Tried','Favorite'])" title="Click to edit">${esc(r.status||'')}</td>
+      <td onclick="editCell(this,'restaurants','${r.id}','notes','text')" title="Click to edit">${esc(r.notes||'')}</td>
       <td>${delBtn(`deleteRestaurant('${r.id}')`)}</td>
     </tr>`).join('');
   initDrag('restaurants');
@@ -400,11 +452,11 @@ async function renderTravel() {
     <tr data-id="${c.id}" class="${c.status==='Visited'?'done-row':''}">
       ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${c.status==='Visited'?'checked':''} onchange="toggleTravel('${c.id}','${c.status}')">${esc(c.city)}</div></td>
-      <td>${esc(c.country||'')}</td>
-      <td>${esc(c.continent||'')}</td>
-      <td>${esc(c.trip_type||'')}</td>
-      <td class="${stC[c.status]||''}">${esc(c.status||'')}</td>
-      <td>${esc(c.notes||'')}</td>
+      <td onclick="editCell(this,'travel','${c.id}','country','text')" title="Click to edit">${esc(c.country||'')}</td>
+      <td onclick="editCell(this,'travel','${c.id}','continent','select',['North America','South America','Europe','Asia','Africa','Oceania','Middle East','Caribbean'])" title="Click to edit">${esc(c.continent||'')}</td>
+      <td onclick="editCell(this,'travel','${c.id}','trip_type','select',['Beach','City','Adventure','Cultural','Nature','Road trip','Cruise','Other'])" title="Click to edit">${esc(c.trip_type||'')}</td>
+      <td class="${stC[c.status]||''}" onclick="editCell(this,'travel','${c.id}','status','select',['Wish list','Planned','Visited'])" title="Click to edit">${esc(c.status||'')}</td>
+      <td onclick="editCell(this,'travel','${c.id}','notes','text')" title="Click to edit">${esc(c.notes||'')}</td>
       <td>${delBtn(`deleteTravel('${c.id}')`)}</td>
     </tr>`).join('');
   initDrag('travel');
@@ -428,9 +480,9 @@ async function renderGroceries() {
     <tr data-id="${g.id}" class="${g.status==='bought'?'done-row':''}">
       ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${g.status==='bought'?'checked':''} onchange="toggleGrocery('${g.id}','${g.status}')">${esc(g.item)}</div></td>
-      <td>${esc(g.qty||'')}</td>
-      <td>${esc(g.store||'')}</td>
-      <td class="${g.status==='bought'?'status-done':'status-todo'}">${g.status==='bought'?'Bought':'Need to buy'}</td>
+      <td onclick="editCell(this,'groceries','${g.id}','qty','text')" title="Click to edit">${esc(g.qty||'')}</td>
+      <td onclick="editCell(this,'groceries','${g.id}','store','text')" title="Click to edit">${esc(g.store||'')}</td>
+      <td class="${g.status==='bought'?'status-done':'status-todo'}" onclick="editCell(this,'groceries','${g.id}','status','select',['need','bought'])" title="Click to edit">${g.status==='bought'?'Bought':'Need to buy'}</td>
       <td>${delBtn(`deleteGrocery('${g.id}')`)}</td>
     </tr>`).join('');
   initDrag('groceries');
@@ -460,11 +512,11 @@ async function renderSubs() {
   el.innerHTML=rows.map(s=>`
     <tr data-id="${s.id}" class="${s.status==='paused'?'done-row':''}">
       ${dragHandle()}
-      <td>${esc(s.name)}</td>
-      <td>$${(s.cost||0).toFixed(2)}/mo</td>
+      <td onclick="editCell(this,'subscriptions','${s.id}','name','text')" title="Click to edit">${esc(s.name)}</td>
+      <td onclick="editCell(this,'subscriptions','${s.id}','cost','number')" title="Click to edit">$${(s.cost||0).toFixed(2)}/mo</td>
       <td>$${((s.cost||0)*12).toFixed(2)}/yr</td>
-      <td>${s.billing_date?'Day '+s.billing_date:''}</td>
-      <td class="${s.status==='active'?'status-done':'status-todo'}" style="cursor:pointer" onclick="toggleSub('${s.id}','${s.status}')">${s.status==='active'?'Active':'Paused'}</td>
+      <td onclick="editCell(this,'subscriptions','${s.id}','billing_date','number')" title="Click to edit">${s.billing_date?'Day '+s.billing_date:''}</td>
+      <td class="${s.status==='active'?'status-done':'status-todo'}" onclick="editCell(this,'subscriptions','${s.id}','status','select',['active','paused'])" title="Click to edit">${s.status==='active'?'Active':'Paused'}</td>
       <td>${delBtn(`deleteSub('${s.id}')`)}</td>
     </tr>`).join('');
   initDrag('subs');
@@ -518,11 +570,11 @@ async function renderBudget() {
   el.innerHTML=rows.map(b=>`
     <tr data-id="${b.id}">
       ${dragHandle()}
-      <td>${esc(b.label)}</td>
-      <td>${esc(b.category||'')}</td>
-      <td>${b.entry_date||''}</td>
-      <td>${b.type==='income'?'Income':'Expense'}</td>
-      <td style="font-weight:500;color:${b.type==='income'?'var(--green)':'var(--red)'}">${b.type==='income'?'+':'-'}$${b.amount.toFixed(2)}</td>
+      <td onclick="editCell(this,'budget','${b.id}','label','text')" title="Click to edit">${esc(b.label)}</td>
+      <td onclick="editCell(this,'budget','${b.id}','category','text')" title="Click to edit">${esc(b.category||'')}</td>
+      <td onclick="editCell(this,'budget','${b.id}','entry_date','date')" title="Click to edit">${b.entry_date||''}</td>
+      <td onclick="editCell(this,'budget','${b.id}','type','select',['income','expense'])" title="Click to edit">${b.type==='income'?'Income':'Expense'}</td>
+      <td style="font-weight:500;color:${b.type==='income'?'var(--green)':'var(--red)'}" onclick="editCell(this,'budget','${b.id}','amount','number')" title="Click to edit">${b.type==='income'?'+':'-'}$${b.amount.toFixed(2)}</td>
       <td>${delBtn(`deleteBudget('${b.id}')`)}</td>
     </tr>`).join('');
   initDrag('budget');
@@ -546,12 +598,12 @@ async function renderCar() {
     <tr data-id="${c.id}" class="${c.status==='Done'?'done-row':''}">
       ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${c.status==='Done'?'checked':''} onchange="toggleCar('${c.id}','${c.status}')">${esc(c.task)}</div></td>
-      <td>${esc(c.car_type||'')}</td>
-      <td>${c.service_date||''}</td>
-      <td>${c.mileage?c.mileage.toLocaleString()+' mi':''}</td>
-      <td>${c.cost?'$'+Number(c.cost).toFixed(2):''}</td>
-      <td class="${stC[c.status]||''}">${esc(c.status||'')}</td>
-      <td>${esc(c.notes||'')}</td>
+      <td onclick="editCell(this,'car_maintenance','${c.id}','car_type','select',['Oil change','Tire rotation','Tire replacement','Brake service','Battery','Air filter','Alignment','Transmission','Inspection','Coolant flush','Windshield','AC service','Other'])" title="Click to edit">${esc(c.car_type||'')}</td>
+      <td onclick="editCell(this,'car_maintenance','${c.id}','service_date','date')" title="Click to edit">${c.service_date||''}</td>
+      <td onclick="editCell(this,'car_maintenance','${c.id}','mileage','number')" title="Click to edit">${c.mileage?c.mileage.toLocaleString()+' mi':''}</td>
+      <td onclick="editCell(this,'car_maintenance','${c.id}','cost','number')" title="Click to edit">${c.cost?'$'+Number(c.cost).toFixed(2):''}</td>
+      <td class="${stC[c.status]||''}" onclick="editCell(this,'car_maintenance','${c.id}','status','select',['Pending','Done','Overdue'])" title="Click to edit">${esc(c.status||'')}</td>
+      <td onclick="editCell(this,'car_maintenance','${c.id}','notes','text')" title="Click to edit">${esc(c.notes||'')}</td>
       <td>${delBtn(`deleteCar('${c.id}')`)}</td>
     </tr>`).join('');
   initDrag('car');
@@ -595,4 +647,128 @@ async function renderWorkout() {
     <div class="stat-card"><div class="stat-num">${thisMonth}</div><div class="stat-lbl">This month</div></div>
     <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-lbl">Total minutes</div></div>
     <div class="stat-card"><div class="stat-num">${streak}</div><div class="stat-lbl">Day streak 🔥</div></div>`;
+}
+
+// ── JOURNAL ───────────────────────────────────────────────────────────────
+let editingJournalId = null;
+
+async function addItem_journal() { openJournalForm(); }
+
+function openJournalForm(entry) {
+  editingJournalId = entry ? entry.id : null;
+  v('journal-form-title').textContent = entry ? 'Edit entry' : 'New entry';
+  v('journal-date').value = entry ? entry.entry_date : today();
+  v('journal-title').value = entry ? (entry.title || '') : '';
+  v('journal-mood').value = entry ? (entry.mood || '🙂 Good') : '🙂 Good';
+  v('journal-category').value = entry ? (entry.category || 'Personal') : 'Personal';
+  v('journal-entry').value = entry ? (entry.entry || '') : '';
+  v('journal-add-form').style.display = 'block';
+  v('journal-entry').focus();
+  v('journal-add-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeJournalForm() {
+  v('journal-add-form').style.display = 'none';
+  editingJournalId = null;
+}
+
+function addTodayEntry() { openJournalForm(); }
+
+async function saveJournalEntry() {
+  const entry_date = v('journal-date').value || today();
+  const title = val('journal-title');
+  const mood = val('journal-mood');
+  const category = val('journal-category');
+  const entry = v('journal-entry').value.trim();
+  if (!entry && !title) return;
+
+  if (editingJournalId) {
+    await dbUpdate('journal', editingJournalId, { entry_date, title, mood, category, entry });
+  } else {
+    await dbInsert('journal', { entry_date, title, mood, category, entry });
+  }
+  closeJournalForm();
+  await renderJournal();
+}
+
+async function deleteJournalEntry(id) {
+  if (!confirm('Delete this journal entry?')) return;
+  await dbDelete('journal', id);
+  await renderJournal();
+}
+
+function toggleJournalCard(id) {
+  const card = document.querySelector(`.journal-card[data-id="${id}"]`);
+  if (card) card.classList.toggle('expanded');
+}
+
+function filterJournal() {
+  const query = (v('search-journal')||{value:''}).value.toLowerCase();
+  document.querySelectorAll('.journal-card').forEach(card => {
+    card.style.display = card.textContent.toLowerCase().includes(query) ? '' : 'none';
+  });
+}
+
+function exportJournalCSV() {
+  const cards = document.querySelectorAll('.journal-card');
+  const lines = ['"Date","Title","Mood","Category","Entry"'];
+  cards.forEach(card => {
+    if (card.style.display === 'none') return;
+    const date = card.querySelector('.journal-card-date')?.textContent.trim() || '';
+    const title = card.querySelector('.journal-card-title')?.textContent.trim() || '';
+    const mood = card.querySelector('.journal-card-mood')?.textContent.trim() || '';
+    const cat = card.querySelector('.journal-cat-pill')?.textContent.trim() || '';
+    const entry = card.querySelector('.journal-card-preview')?.textContent.trim().replace(/"/g,'""') || '';
+    lines.push(`"${date}","${title}","${mood}","${cat}","${entry}"`);
+  });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([lines.join('\n')], {type:'text/csv'}));
+  a.download = 'journal-export.csv'; a.click();
+}
+
+async function renderJournal() {
+  const rows = await dbSelect('journal', 'entry_date');
+  updateBadge('journal', rows);
+
+  const statEl = v('journal-stat');
+  if (statEl) statEl.textContent = `${rows.length} ${rows.length === 1 ? 'entry' : 'entries'}`;
+
+  // Mood summary
+  const moodEl = document.getElementById('journal-mood-summary');
+  if (moodEl && rows.length) {
+    const moodCount = {};
+    rows.forEach(r => { if(r.mood) moodCount[r.mood] = (moodCount[r.mood]||0)+1; });
+    const sorted = Object.entries(moodCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    moodEl.innerHTML = sorted.map(([mood,count])=>
+      `<span class="mood-pill">${mood} <strong>${count}</strong></span>`
+    ).join('');
+  } else if (moodEl) { moodEl.innerHTML = ''; }
+
+  const el = v('journal-list');
+  if (!el) return;
+  if (!rows.length) {
+    el.innerHTML = `<div class="empty" style="padding:3rem 0">No journal entries yet — click "✏ Write today" to start</div>`;
+    return;
+  }
+
+  el.innerHTML = rows.map(r => {
+    const preview = (r.entry || '').slice(0, 300);
+    const dateFormatted = r.entry_date ? new Date(r.entry_date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'}) : '';
+    return `
+    <div class="journal-card" data-id="${r.id}" onclick="toggleJournalCard('${r.id}')">
+      <div class="journal-card-header">
+        <span class="journal-card-date">${dateFormatted}</span>
+        <span class="journal-card-title">${esc(r.title || 'Untitled entry')}</span>
+        <span class="journal-card-mood">${esc(r.mood || '')}</span>
+      </div>
+      <div class="journal-card-meta">
+        ${r.category ? `<span class="journal-cat-pill">${esc(r.category)}</span>` : ''}
+      </div>
+      <div class="journal-card-preview">${esc(preview)}${r.entry && r.entry.length > 300 ? '…' : ''}</div>
+      <div class="journal-card-actions">
+        <button class="journal-edit-btn" onclick="event.stopPropagation();openJournalForm(${JSON.stringify({id:r.id,entry_date:r.entry_date,title:r.title,mood:r.mood,category:r.category,entry:r.entry}).replace(/"/g,'&quot;')})">✏ Edit</button>
+        <button class="journal-del-btn" onclick="event.stopPropagation();deleteJournalEntry('${r.id}')">✕ Delete</button>
+      </div>
+    </div>`;
+  }).join('');
 }
