@@ -645,3 +645,161 @@ body.dark .home-item { color: #e0eaf8; border-color: #0a1929; }
 body.dark .budget-chart-wrap { background: #0a1929; border-color: #113050; }
 body.dark .subs-summary-card { background: #0a1929; border-color: #113050; }
 body.dark .subs-summary-val { color: #e0eaf8; }
+
+/* ── JOURNAL ── */
+.journal-add-form {
+  background: var(--lb-50);
+  border: 0.5px solid var(--lb-200);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.journal-add-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.journal-add-title { font-size: 14px; font-weight: 600; color: var(--lb-900); }
+.journal-form-grid { display: flex; flex-direction: column; gap: 12px; }
+.journal-form-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.jf-field { display: flex; flex-direction: column; gap: 4px; }
+.jf-field label { font-size: 11px; font-weight: 600; color: var(--lb-600); text-transform: uppercase; letter-spacing: 0.05em; }
+.jf-field input, .jf-field select, .jf-field textarea {
+  padding: 7px 10px;
+  border: 0.5px solid var(--lb-200);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: #1a1a1a;
+  background: var(--white);
+  outline: none;
+  font-family: inherit;
+}
+.jf-field input:focus, .jf-field select:focus, .jf-field textarea:focus { border-color: var(--lb-400); }
+.jf-field textarea { resize: vertical; line-height: 1.6; }
+.jf-full { grid-column: 1 / -1; }
+
+.journal-mood-summary {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.mood-pill {
+  background: var(--lb-50);
+  border: 0.5px solid var(--lb-100);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--lb-800);
+}
+
+.journal-list { display: flex; flex-direction: column; gap: 12px; }
+.journal-card {
+  background: var(--white);
+  border: 0.5px solid var(--lb-100);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.journal-card:hover { border-color: var(--lb-400); }
+.journal-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.journal-card-date {
+  font-size: 11px;
+  color: var(--lb-600);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.journal-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--lb-900);
+  flex: 1;
+}
+.journal-card-mood {
+  font-size: 13px;
+  white-space: nowrap;
+}
+.journal-card-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.journal-cat-pill {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--lb-50);
+  color: var(--lb-800);
+}
+.journal-card-preview {
+  font-size: 13px;
+  color: var(--gray-600);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.journal-card.expanded .journal-card-preview {
+  display: block;
+  -webkit-line-clamp: unset;
+}
+.journal-card-actions {
+  display: none;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 0.5px solid var(--lb-100);
+}
+.journal-card.expanded .journal-card-actions { display: flex; }
+.journal-edit-btn {
+  padding: 5px 12px;
+  font-size: 12px;
+  border: 0.5px solid var(--lb-400);
+  border-radius: var(--radius-md);
+  background: var(--lb-50);
+  color: var(--lb-800);
+  cursor: pointer;
+}
+.journal-edit-btn:hover { background: var(--lb-100); }
+.journal-del-btn {
+  padding: 5px 12px;
+  font-size: 12px;
+  border: 0.5px solid #f5c1c1;
+  border-radius: var(--radius-md);
+  background: #fff0f0;
+  color: var(--red);
+  cursor: pointer;
+}
+
+body.dark .journal-card { background: #0f2133; border-color: #113050; }
+body.dark .journal-card-title { color: #e0eaf8; }
+body.dark .journal-card-preview { color: #adb5bd; }
+body.dark .jf-field input, body.dark .jf-field select, body.dark .jf-field textarea { background: #0a1929; color: #e0eaf8; border-color: #113050; }
+body.dark .journal-add-form { background: #0a1929; border-color: #113050; }
+
+/* ── INLINE EDITING ── */
+.todo-table tbody td[onclick] {
+  cursor: pointer;
+}
+.todo-table tbody td[onclick]:hover {
+  background: var(--lb-50);
+  outline: 0.5px dashed var(--lb-400);
+  outline-offset: -1px;
+}
+.todo-table tbody td[onclick]:hover::after {
+  content: ' ✎';
+  font-size: 10px;
+  color: var(--lb-400);
+  opacity: 0.7;
+}
