@@ -514,7 +514,7 @@ async function renderSubs() {
     <tr data-id="${s.id}" class="${s.status==='paused'?'done-row':''}">
       ${dragHandle()}
       <td onclick="editCell(this,'subscriptions','${s.id}','name','text')" title="Click to edit">${esc(s.name)}</td>
-      <td onclick="editCell(this,'subscriptions','${s.id}','payment_type','select',['Subscription','Internet / Phone','Soccer / Sports league','Insurance','Rent / Mortgage','Utilities','Gym / Fitness','Streaming','Software / Apps','Other'])" title="Click to edit">${esc(s.payment_type||'')}</td>
+      <td onclick="editCell(this,'subscriptions','${s.id}','payment_type','select',['Subscription','Internet / Phone','Soccer / Sports league','Insurance','Rent / Mortgage','Utilities','Gym / Fitness','Streaming','Software / Apps','Loan','Other'])" title="Click to edit">${esc(s.payment_type||'')}</td>
       <td onclick="editCell(this,'subscriptions','${s.id}','cost','number')" title="Click to edit">$${(s.cost||0).toFixed(2)}/mo</td>
       <td>$${((s.cost||0)*12).toFixed(2)}/yr</td>
       <td onclick="editCell(this,'subscriptions','${s.id}','billing_date','number')" title="Click to edit">${s.billing_date?'Day '+s.billing_date:''}</td>
