@@ -298,13 +298,29 @@ async function renderHome() {
       <div class="home-stat-sub">${journal.length} total entries</div>
     </div>`;
 
-  // Tasks due soon
-  const dueSoon = todos.filter(t=>!t.done&&t.due_date).sort((a,b)=>new Date(a.due_date)-new Date(b.due_date)).slice(0,20);
-  document.getElementById('home-tasks').innerHTML = `<div class="home-panel-body">${dueSoon.length ? dueSoon.map(t=>`
-    <div class="home-item">
-      <div class="home-item-left"><span class="home-item-name">${esc(t.text)}</span></div>
-      <div class="home-item-right" style="color:${isOverdue(t.due_date)?'var(--red)':'var(--lb-600)'}">${isOverdue(t.due_date)?'⚠ ':''}${t.due_date}</div>
-    </div>`).join('') : '<div class="home-empty">No upcoming tasks</div>'}</div>`;
+  // All tasks
+  const allTasks = todos.sort((a,b) => {
+    // Sort: overdue first, then by status (To do, In progress, Done), then by due date
+    if (a.done && !b.done) return 1;
+    if (!a.done && b.done) return -1;
+    if (isOverdue(a.due_date) && !isOverdue(b.due_date)) return -1;
+    if (!isOverdue(a.due_date) && isOverdue(b.due_date)) return 1;
+    if (a.due_date && b.due_date) return new Date(a.due_date)-new Date(b.due_date);
+    if (a.due_date && !b.due_date) return -1;
+    if (!a.due_date && b.due_date) return 1;
+    return 0;
+  });
+  document.getElementById('home-tasks').innerHTML = `<div class="home-panel-body">${allTasks.length ? allTasks.map(t=>`
+    <div class="home-item" style="${t.done?'opacity:0.5':''}">
+      <div class="home-item-left">
+        <span style="margin-right:6px;color:${t.done?'var(--green)':'var(--lb-400)'}">${t.done?'✓':'○'}</span>
+        <span class="home-item-name" style="${t.done?'text-decoration:line-through':''}">${esc(t.text)}</span>
+        ${t.priority==='High'?'<span style="font-size:10px;color:var(--red);margin-left:6px">High</span>':''}
+      </div>
+      <div class="home-item-right" style="color:${isOverdue(t.due_date)&&!t.done?'var(--red)':'var(--lb-600)'}">
+        ${isOverdue(t.due_date)&&!t.done?'⚠ ':''}${t.due_date||''}
+      </div>
+    </div>`).join('') : '<div class="home-empty">No tasks yet</div>'}</div>`;
 
   // Recent workouts
   const recentW = workouts.slice(0,20);
