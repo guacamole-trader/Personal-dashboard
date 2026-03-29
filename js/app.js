@@ -417,7 +417,8 @@ async function renderVideos() {
       ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${vd.status==='Done'?'checked':''} onchange="toggleVideo('${vd.id}','${vd.status}')">${esc(vd.title)}</div></td>
       <td onclick="editCell(this,'videos','${vd.id}','category','select',['Health','Personal Growth','Music','Technology','Science','Finance','History','Comedy','Motivation','Cooking','Travel','Sports','Documentary','Education','Other'])" title="Click to edit">${esc(vd.category||'')}</td>
-      <td>${vd.source ? `<div style="display:flex;align-items:center;gap:6px"><a href="${esc(vd.source)}" target="_blank" rel="noopener" style="color:var(--lb-600);text-decoration:none;font-size:12px" title="${esc(vd.source)}">🔗 Open link</a><button class="del-btn" style="color:var(--lb-400);font-size:10px" onclick="editCell(this.parentElement.parentElement,'videos','${vd.id}','source','text')" title="Edit URL">✎</button></div>` : `<button class="del-btn" style="color:var(--lb-400);font-size:11px" onclick="editCell(this.parentElement,'videos','${vd.id}','source','text')" title="Add URL">+ URL</button>`}</td>
+      <td onclick="editCell(this,'videos','${vd.id}','source','text')" title="Click to edit">${esc(vd.source||'')}</td>
+      <td style="text-align:center">${vd.source?`<a href="${esc(vd.source)}" target="_blank" rel="noopener" style="display:inline-block;padding:3px 10px;background:var(--lb-400);color:#fff;border-radius:var(--radius-sm);font-size:11px;font-weight:500;text-decoration:none" title="Open video">▶ Watch</a>`:'—'}</td>
       <td onclick="editCell(this,'videos','${vd.id}','note','text')" title="Click to edit">${esc(vd.note||'')}</td>
       <td class="${stC[vd.status]||''}" onclick="editCell(this,'videos','${vd.id}','status','select',['To watch','Watching','Done'])" title="Click to edit">${esc(vd.status||'')}</td>
       <td>${delBtn(`deleteVideo('${vd.id}')`)}</td>
