@@ -402,8 +402,8 @@ async function renderBooks() {
 // ── VIDEOS ────────────────────────────────────────────────────────────────
 async function addVideo() {
   const title=val('videos-title'); if(!title)return;
-  await dbInsert('videos',{title,category:val('videos-category'),source:val('videos-source'),status:val('videos-status')});
-  clr('videos-title','videos-source'); await renderVideos();
+  await dbInsert('videos',{title,category:val('videos-category'),source:val('videos-source'),note:val('videos-note'),status:val('videos-status')});
+  clr('videos-title','videos-source','videos-note'); await renderVideos();
 }
 async function toggleVideo(id,status){await dbUpdate('videos',id,{status:status==='Done'?'To watch':'Done'});await renderVideos();}
 async function deleteVideo(id){await dbDelete('videos',id);await renderVideos();}
@@ -417,7 +417,8 @@ async function renderVideos() {
       ${dragHandle()}
       <td><div class="cell-check"><input class="check" type="checkbox" ${vd.status==='Done'?'checked':''} onchange="toggleVideo('${vd.id}','${vd.status}')">${esc(vd.title)}</div></td>
       <td onclick="editCell(this,'videos','${vd.id}','category','select',['Health','Personal Growth','Music','Technology','Science','Finance','History','Comedy','Motivation','Cooking','Travel','Sports','Documentary','Education','Other'])" title="Click to edit">${esc(vd.category||'')}</td>
-      <td onclick="editCell(this,'videos','${vd.id}','source','text')" title="Click to edit">${esc(vd.source||'')}</td>
+      <td title="Click to edit" onclick="editCell(this,'videos','${vd.id}','source','text')">${vd.source ? `<a href="${esc(vd.source)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--lb-600);text-decoration:none;display:flex;align-items:center;gap:4px" title="${esc(vd.source)}">🔗 Open link</a>` : ''}</td>
+      <td onclick="editCell(this,'videos','${vd.id}','note','text')" title="Click to edit">${esc(vd.note||'')}</td>
       <td class="${stC[vd.status]||''}" onclick="editCell(this,'videos','${vd.id}','status','select',['To watch','Watching','Done'])" title="Click to edit">${esc(vd.status||'')}</td>
       <td>${delBtn(`deleteVideo('${vd.id}')`)}</td>
     </tr>`).join('');
