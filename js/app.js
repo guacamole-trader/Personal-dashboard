@@ -33,6 +33,37 @@ function showDashboard() {
   document.getElementById('dashboard').style.display='block';
   document.getElementById('user-email-display').textContent=currentUser.email;
   setGreeting(); setDate(); loadDailyMsg(); loadSection(currentSection); loadAllBadges();
+  initSidebarDrag();
+  restoreSidebarOrder();
+}
+
+// ── SIDEBAR DRAG ──────────────────────────────────────────────────────────
+function initSidebarDrag() {
+  const nav = document.getElementById('sidebar-nav');
+  if (!nav || nav._sortable) return;
+  nav._sortable = Sortable.create(nav, {
+    animation: 150,
+    ghostClass: 'drag-ghost',
+    chosenClass: 'drag-chosen',
+    onEnd: () => {
+      const order = Array.from(nav.querySelectorAll('.nav-item[data-sec]')).map(el => el.dataset.sec);
+      localStorage.setItem('sidebar-order', JSON.stringify(order));
+    }
+  });
+}
+
+function restoreSidebarOrder() {
+  try {
+    const saved = localStorage.getItem('sidebar-order');
+    if (!saved) return;
+    const order = JSON.parse(saved);
+    const nav = document.getElementById('sidebar-nav');
+    if (!nav) return;
+    order.forEach(sec => {
+      const item = nav.querySelector(`[data-sec="${sec}"]`);
+      if (item) nav.appendChild(item);
+    });
+  } catch(e) {}
 }
 (async()=>{ const { data }=await db.auth.getSession(); if(data.session){currentUser=data.session.user;showDashboard();} })();
 
