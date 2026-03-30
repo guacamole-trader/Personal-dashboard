@@ -48,21 +48,21 @@
           <span class="sidebar-name">My Dashboard</span>
           <button class="collapse-btn" onclick="toggleSidebar()" title="Collapse sidebar">&#8249;</button>
         </div>
-        <div class="nav-label">Sections</div>
-        <nav>
-          <div class="nav-item active" onclick="nav('home')"><span class="nav-icon">🏠</span><span class="nav-text">Home</span></div>
-          <div class="nav-item" onclick="nav('todo')"><span class="nav-icon">✓</span><span class="nav-text">To-do list</span><span class="nav-badge" id="badge-todo"></span></div>
-          <div class="nav-item" onclick="nav('books')"><span class="nav-icon">📖</span><span class="nav-text">Books</span><span class="nav-badge" id="badge-books"></span></div>
-          <div class="nav-item" onclick="nav('videos')"><span class="nav-icon">▶</span><span class="nav-text">Videos</span><span class="nav-badge" id="badge-videos"></span></div>
-          <div class="nav-item" onclick="nav('restaurants')"><span class="nav-icon">🍽</span><span class="nav-text">Restaurants</span><span class="nav-badge" id="badge-restaurants"></span></div>
-          <div class="nav-item" onclick="nav('travel')"><span class="nav-icon">✈</span><span class="nav-text">Travel</span><span class="nav-badge" id="badge-travel"></span></div>
-          <div class="nav-item" onclick="nav('groceries')"><span class="nav-icon">🛒</span><span class="nav-text">Groceries</span><span class="nav-badge" id="badge-groceries"></span></div>
-          <div class="nav-item" onclick="nav('subs')"><span class="nav-icon">♻</span><span class="nav-text">Recurrent Payments</span><span class="nav-badge" id="badge-subs"></span></div>
-          <div class="nav-item" onclick="nav('budget')"><span class="nav-icon">$</span><span class="nav-text">Budget</span><span class="nav-badge" id="badge-budget"></span></div>
-          <div class="nav-item" onclick="nav('car')"><span class="nav-icon">🚗</span><span class="nav-text">Car maintenance</span><span class="nav-badge" id="badge-car"></span></div>
-          <div class="nav-item" onclick="nav('workout')"><span class="nav-icon">💪</span><span class="nav-text">Workout log</span><span class="nav-badge" id="badge-workout"></span></div>
-          <div class="nav-item" onclick="nav('journal')"><span class="nav-icon">📓</span><span class="nav-text">Journal</span><span class="nav-badge" id="badge-journal"></span></div>
-          <div class="nav-item" onclick="nav('links')"><span class="nav-icon">🔗</span><span class="nav-text">Links</span><span class="nav-badge" id="badge-links"></span></div>
+        <div class="nav-label">Sections <span style="font-size:9px;color:var(--lb-400);font-weight:400">drag to reorder</span></div>
+        <nav id="sidebar-nav">
+          <div class="nav-item active" onclick="nav('home')" data-sec="home"><span class="nav-icon">🏠</span><span class="nav-text">Home</span></div>
+          <div class="nav-item" onclick="nav('todo')" data-sec="todo"><span class="nav-icon">✓</span><span class="nav-text">To-do list</span><span class="nav-badge" id="badge-todo"></span></div>
+          <div class="nav-item" onclick="nav('books')" data-sec="books"><span class="nav-icon">📖</span><span class="nav-text">Books</span><span class="nav-badge" id="badge-books"></span></div>
+          <div class="nav-item" onclick="nav('videos')" data-sec="videos"><span class="nav-icon">▶</span><span class="nav-text">Videos</span><span class="nav-badge" id="badge-videos"></span></div>
+          <div class="nav-item" onclick="nav('restaurants')" data-sec="restaurants"><span class="nav-icon">🍽</span><span class="nav-text">Restaurants</span><span class="nav-badge" id="badge-restaurants"></span></div>
+          <div class="nav-item" onclick="nav('travel')" data-sec="travel"><span class="nav-icon">✈</span><span class="nav-text">Travel</span><span class="nav-badge" id="badge-travel"></span></div>
+          <div class="nav-item" onclick="nav('groceries')" data-sec="groceries"><span class="nav-icon">🛒</span><span class="nav-text">Groceries</span><span class="nav-badge" id="badge-groceries"></span></div>
+          <div class="nav-item" onclick="nav('subs')" data-sec="subs"><span class="nav-icon">♻</span><span class="nav-text">Recurrent Payments</span><span class="nav-badge" id="badge-subs"></span></div>
+          <div class="nav-item" onclick="nav('budget')" data-sec="budget"><span class="nav-icon">$</span><span class="nav-text">Budget</span><span class="nav-badge" id="badge-budget"></span></div>
+          <div class="nav-item" onclick="nav('car')" data-sec="car"><span class="nav-icon">🚗</span><span class="nav-text">Car maintenance</span><span class="nav-badge" id="badge-car"></span></div>
+          <div class="nav-item" onclick="nav('workout')" data-sec="workout"><span class="nav-icon">💪</span><span class="nav-text">Workout log</span><span class="nav-badge" id="badge-workout"></span></div>
+          <div class="nav-item" onclick="nav('journal')" data-sec="journal"><span class="nav-icon">📓</span><span class="nav-text">Journal</span><span class="nav-badge" id="badge-journal"></span></div>
+          <div class="nav-item" onclick="nav('links')" data-sec="links"><span class="nav-icon">🔗</span><span class="nav-text">Links</span><span class="nav-badge" id="badge-links"></span></div>
         </nav>
         <div class="sidebar-bottom">
           <span id="user-email-display"></span>
