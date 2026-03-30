@@ -94,18 +94,18 @@ async function dbSelect(table,fallbackOrder='created_at') {
 async function loadSection(sec) {
   setLoading(true);
   try {
-    const fn={home:renderHome,todo:renderTodo,books:renderBooks,travel:renderTravel,subs:renderSubs,restaurants:renderRestaurants,budget:renderBudget,car:renderCar,videos:renderVideos,groceries:renderGroceries,workout:renderWorkout,journal:renderJournal};
+    const fn={home:renderHome,todo:renderTodo,books:renderBooks,travel:renderTravel,subs:renderSubs,restaurants:renderRestaurants,budget:renderBudget,car:renderCar,videos:renderVideos,groceries:renderGroceries,workout:renderWorkout,journal:renderJournal,links:renderLinks};
     if(fn[sec])await fn[sec]();
   } finally { setLoading(false); }
 }
 async function addItem(sec) {
-  const fn={todo:addTodo,books:addBook,travel:addTravel,subs:addSub,restaurants:addRestaurant,budget:addBudget,car:addCar,videos:addVideo,groceries:addGrocery,workout:addWorkout};
+  const fn={todo:addTodo,books:addBook,travel:addTravel,subs:addSub,restaurants:addRestaurant,budget:addBudget,car:addCar,videos:addVideo,groceries:addGrocery,workout:addWorkout,links:addLink};
   if(fn[sec])await fn[sec]();
 }
 
 // ── BADGES ────────────────────────────────────────────────────────────────
 async function loadAllBadges() {
-  const tables={todo:'todos',books:'books',videos:'videos',restaurants:'restaurants',travel:'travel',groceries:'groceries',subs:'subscriptions',budget:'budget',car:'car_maintenance',workout:'workouts',journal:'journal'};
+  const tables={todo:'todos',books:'books',videos:'videos',restaurants:'restaurants',travel:'travel',groceries:'groceries',subs:'subscriptions',budget:'budget',car:'car_maintenance',workout:'workouts',journal:'journal',links:'links'};
   for(const [sec,table] of Object.entries(tables)){
     const {count}=await db.from(table).select('*',{count:'exact',head:true}).eq('user_id',uid());
     const el=document.getElementById('badge-'+sec); if(el)el.textContent=count||'';
@@ -168,7 +168,7 @@ function isOverdue(dateStr){return dateStr&&new Date(dateStr)<new Date(today());
 
 // ── DRAG ──────────────────────────────────────────────────────────────────
 const dragInstances={};
-const sectionTables={todo:'todos',books:'books',videos:'videos',restaurants:'restaurants',travel:'travel',groceries:'groceries',subs:'subscriptions',budget:'budget',car:'car_maintenance',workout:'workouts'};
+const sectionTables={todo:'todos',books:'books',videos:'videos',restaurants:'restaurants',travel:'travel',groceries:'groceries',subs:'subscriptions',budget:'budget',car:'car_maintenance',workout:'workouts',links:'links'};
 function initDrag(sec) {
   const table=sectionTables[sec]; if(!table)return;
   const tbody=document.querySelector('#table-'+sec+' tbody'); if(!tbody)return;
@@ -791,4 +791,34 @@ async function renderJournal() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ── LINKS ─────────────────────────────────────────────────────────────────
+async function addLink() {
+  const title = val('links-title'); if (!title) return;
+  await dbInsert('links', { title, url: val('links-url'), category: val('links-category'), note: val('links-note'), status: val('links-status') });
+  clr('links-title', 'links-url', 'links-note');
+  await renderLinks();
+}
+async function deleteLink(id) { await dbDelete('links', id); await renderLinks(); }
+async function renderLinks() {
+  const rows = await dbSelect('links', 'title');
+  updateBadge('links', rows);
+  const statEl = v('links-stat');
+  if (statEl) statEl.textContent = `${rows.length} ${rows.length === 1 ? 'link' : 'links'}`;
+  const el = v('links-list'); if (!el) return;
+  if (!rows.length) { el.innerHTML = `<tr><td colspan="8" class="empty">No links yet — add your first bookmark above</td></tr>`; return; }
+  const stC = { 'Active': 'status-done', 'Archived': 'status-todo' };
+  el.innerHTML = rows.map(l => `
+    <tr data-id="${l.id}" class="${l.status === 'Archived' ? 'done-row' : ''}">
+      ${dragHandle()}
+      <td onclick="editCell(this,'links','${l.id}','title','text')" title="Click to edit">${esc(l.title)}</td>
+      <td onclick="editCell(this,'links','${l.id}','url','text')" title="Click to edit" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--lb-600)">${esc(l.url||'')}</td>
+      <td style="text-align:center">${l.url ? `<a href="${esc(l.url)}" target="_blank" rel="noopener" style="display:inline-block;padding:3px 10px;background:var(--lb-400);color:#fff;border-radius:var(--radius-sm);font-size:11px;font-weight:500;text-decoration:none">🔗 Open</a>` : '—'}</td>
+      <td onclick="editCell(this,'links','${l.id}','category','select',['Finance','Trading','Work','Health','Government','Shopping','Social Media','News','Tools','Entertainment','Other'])" title="Click to edit">${esc(l.category || '')}</td>
+      <td onclick="editCell(this,'links','${l.id}','note','text')" title="Click to edit">${esc(l.note || '')}</td>
+      <td class="${stC[l.status] || ''}" onclick="editCell(this,'links','${l.id}','status','select',['Active','Archived'])" title="Click to edit">${esc(l.status || '')}</td>
+      <td>${delBtn(`deleteLink('${l.id}')`)}</td>
+    </tr>`).join('');
+  initDrag('links');
 }
