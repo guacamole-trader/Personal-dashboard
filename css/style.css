@@ -803,3 +803,11 @@ body.dark .journal-add-form { background: #0a1929; border-color: #113050; }
   color: var(--lb-400);
   opacity: 0.7;
 }
+
+/* ── SIDEBAR DRAG ── */
+#sidebar-nav .nav-item {
+  cursor: grab;
+}
+#sidebar-nav .nav-item:active {
+  cursor: grabbing;
+}
