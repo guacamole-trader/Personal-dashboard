@@ -199,7 +199,7 @@ function isOverdue(dateStr){return dateStr&&new Date(dateStr)<new Date(today());
 
 // ── DRAG ──────────────────────────────────────────────────────────────────
 const dragInstances={};
-const sectionTables={todo:'todos',books:'books',videos:'videos',restaurants:'restaurants',travel:'travel',groceries:'groceries',subs:'subscriptions',budget:'budget',car:'car_maintenance',workout:'workouts',links:'links'};
+const sectionTables={todo:'todos',books:'books',videos:'videos',restaurants:'restaurants',travel:'travel',groceries:'groceries',subs:'subscriptions',budget:'budget',car:'car_maintenance',workout:'workouts'};
 function initDrag(sec) {
   const table=sectionTables[sec]; if(!table)return;
   const tbody=document.querySelector('#table-'+sec+' tbody'); if(!tbody)return;
@@ -825,31 +825,196 @@ async function renderJournal() {
 }
 
 // ── LINKS ─────────────────────────────────────────────────────────────────
+const folderInstances = {};
+
+function openAddFolder() {
+  const bar = v('add-folder-bar');
+  if (bar) { bar.style.display = 'flex'; v('folder-name-input').focus(); }
+}
+function closeAddFolder() {
+  const bar = v('add-folder-bar');
+  if (bar) { bar.style.display = 'none'; clr('folder-name-input'); }
+}
+
+async function saveFolder() {
+  const name = val('folder-name-input'); if (!name) return;
+  await dbInsert('link_folders', { name, collapsed: false });
+  closeAddFolder();
+  await renderLinks();
+}
+
+async function deleteFolder(id) {
+  if (!confirm('Delete this folder? Links inside will become ungrouped.')) return;
+  await dbUpdate('links', id, { folder_id: null });
+  await dbDelete('link_folders', id);
+  await renderLinks();
+}
+
+async function toggleFolder(id) {
+  const body = document.getElementById('folder-body-' + id);
+  const icon = document.getElementById('folder-icon-' + id);
+  if (!body) return;
+  const isHidden = body.classList.contains('hidden');
+  body.classList.toggle('hidden', !isHidden);
+  if (icon) { icon.classList.toggle('open', !isHidden); icon.classList.toggle('closed', isHidden); }
+  // save collapsed state
+  const saved = JSON.parse(localStorage.getItem('folder-collapsed') || '{}');
+  saved[id] = isHidden ? false : true;
+  localStorage.setItem('folder-collapsed', JSON.stringify(saved));
+}
+
 async function addLink() {
   const title = val('links-title'); if (!title) return;
-  await dbInsert('links', { title, url: val('links-url'), category: val('links-category'), note: val('links-note'), status: val('links-status') });
+  const folder_id = v('links-folder-select') ? (v('links-folder-select').value || null) : null;
+  await dbInsert('links', { title, url: val('links-url'), folder_id, category: val('links-category'), note: val('links-note'), status: 'Active' });
   clr('links-title', 'links-url', 'links-note');
   await renderLinks();
 }
+
 async function deleteLink(id) { await dbDelete('links', id); await renderLinks(); }
-async function renderLinks() {
-  const rows = await dbSelect('links', 'title');
-  updateBadge('links', rows);
-  const statEl = v('links-stat');
-  if (statEl) statEl.textContent = `${rows.length} ${rows.length === 1 ? 'link' : 'links'}`;
-  const el = v('links-list'); if (!el) return;
-  if (!rows.length) { el.innerHTML = `<tr><td colspan="8" class="empty">No links yet — add your first bookmark above</td></tr>`; return; }
-  const stC = { 'Active': 'status-done', 'Archived': 'status-todo' };
-  el.innerHTML = rows.map(l => `
-    <tr data-id="${l.id}" class="${l.status === 'Archived' ? 'done-row' : ''}">
-      ${dragHandle()}
-      <td onclick="editCell(this,'links','${l.id}','title','text')" title="Click to edit">${esc(l.title)}</td>
-      <td onclick="editCell(this,'links','${l.id}','url','text')" title="Click to edit" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--lb-600)">${esc(l.url||'')}</td>
-      <td style="text-align:center">${l.url ? `<a href="${esc(l.url)}" target="_blank" rel="noopener" style="display:inline-block;padding:3px 10px;background:var(--lb-400);color:#fff;border-radius:var(--radius-sm);font-size:11px;font-weight:500;text-decoration:none">🔗 Open</a>` : '—'}</td>
-      <td onclick="editCell(this,'links','${l.id}','category','select',['Finance','Trading','Work','Health','Government','Shopping','Social Media','News','Tools','Entertainment','Other'])" title="Click to edit">${esc(l.category || '')}</td>
-      <td onclick="editCell(this,'links','${l.id}','note','text')" title="Click to edit">${esc(l.note || '')}</td>
-      <td class="${stC[l.status] || ''}" onclick="editCell(this,'links','${l.id}','status','select',['Active','Archived'])" title="Click to edit">${esc(l.status || '')}</td>
-      <td>${delBtn(`deleteLink('${l.id}')`)}</td>
-    </tr>`).join('');
-  initDrag('links');
+
+async function editLinkField(id, field, currentVal) {
+  const newVal = prompt(`Edit ${field}:`, currentVal || '');
+  if (newVal === null) return;
+  await dbUpdate('links', id, { [field]: newVal });
+  await renderLinks();
 }
+
+function filterLinks() {
+  const query = val('search-links').toLowerCase();
+  document.querySelectorAll('.link-row').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+  });
+  document.querySelectorAll('.links-folder').forEach(folder => {
+    const visible = Array.from(folder.querySelectorAll('.link-row')).some(r => r.style.display !== 'none');
+    folder.style.display = visible ? '' : 'none';
+  });
+}
+
+function exportLinksCSV() {
+  const rows = document.querySelectorAll('.link-row');
+  const lines = ['"Title","URL","Category","Note","Folder"'];
+  rows.forEach(row => {
+    if (row.style.display === 'none') return;
+    const title = row.querySelector('.link-title')?.textContent.trim().replace(/"/g,'""') || '';
+    const url = row.querySelector('.link-url')?.textContent.trim().replace(/"/g,'""') || '';
+    const cat = row.querySelector('.link-cat')?.textContent.trim().replace(/"/g,'""') || '';
+    const note = row.querySelector('.link-note')?.textContent.trim().replace(/"/g,'""') || '';
+    const folder = row.closest('.links-folder')?.querySelector('.links-folder-name')?.textContent.trim().replace(/"/g,'""') || '';
+    lines.push(`"${title}","${url}","${cat}","${note}","${folder}"`);
+  });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([lines.join('\n')], {type:'text/csv'}));
+  a.download = 'links-export.csv'; a.click();
+}
+
+function initFolderDrag(folderId) {
+  const body = document.getElementById('folder-body-' + folderId);
+  if (!body) return;
+  if (folderInstances[folderId]) folderInstances[folderId].destroy();
+  folderInstances[folderId] = Sortable.create(body, {
+    animation: 150,
+    group: 'links',
+    handle: '.link-drag',
+    ghostClass: 'drag-ghost',
+    chosenClass: 'drag-chosen',
+    onEnd: async (evt) => {
+      const linkId = evt.item.dataset.id;
+      const newFolder = evt.to.dataset.folder || null;
+      await dbUpdate('links', linkId, { folder_id: newFolder });
+      // update sort order within new folder
+      const siblings = Array.from(evt.to.querySelectorAll('.link-row[data-id]'));
+      await Promise.all(siblings.map((el, idx) => dbUpdate('links', el.dataset.id, { sort_order: idx })));
+    }
+  });
+}
+
+function initUngroupedDrag() {
+  const el = document.getElementById('ungrouped-links');
+  if (!el) return;
+  if (folderInstances['ungrouped']) folderInstances['ungrouped'].destroy();
+  folderInstances['ungrouped'] = Sortable.create(el, {
+    animation: 150,
+    group: 'links',
+    handle: '.link-drag',
+    ghostClass: 'drag-ghost',
+    onEnd: async (evt) => {
+      const linkId = evt.item.dataset.id;
+      const newFolder = evt.to.dataset.folder || null;
+      await dbUpdate('links', linkId, { folder_id: newFolder });
+      const siblings = Array.from(evt.to.querySelectorAll('.link-row[data-id]'));
+      await Promise.all(siblings.map((el, idx) => dbUpdate('links', el.dataset.id, { sort_order: idx })));
+    }
+  });
+}
+
+function linkRowHTML(l) {
+  return `<div class="link-row" data-id="${l.id}">
+    <span class="link-drag">⋮⋮</span>
+    <span class="link-title" onclick="editLinkField('${l.id}','title','${esc(l.title)}')" title="Click to edit title">${esc(l.title)}</span>
+    <span class="link-url" onclick="editLinkField('${l.id}','url','${esc(l.url||'')}')" title="Click to edit URL">${esc(l.url||'')}</span>
+    ${l.url ? `<a href="${esc(l.url)}" target="_blank" rel="noopener" class="link-open">🔗 Open</a>` : '<span style="color:var(--lb-200);font-size:12px">no url</span>'}
+    <span class="link-cat">${esc(l.category||'')}</span>
+    <span class="link-note" onclick="editLinkField('${l.id}','note','${esc(l.note||'')}')" title="Click to edit note">${esc(l.note||'') || '<span style="color:var(--lb-200)">+ note</span>'}</span>
+    <button class="link-del" onclick="deleteLink('${l.id}')">✕</button>
+  </div>`;
+}
+
+async function renderLinks() {
+  const [links, folders] = await Promise.all([
+    dbSelect('links', 'title'),
+    dbSelect('link_folders', 'name')
+  ]);
+
+  updateBadge('links', links);
+  const statEl = v('links-stat');
+  if (statEl) statEl.textContent = `${links.length} ${links.length === 1 ? 'link' : 'links'} · ${folders.length} ${folders.length === 1 ? 'folder' : 'folders'}`;
+
+  // Update folder dropdown in add form
+  const sel = v('links-folder-select');
+  if (sel) {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">No folder</option>' + folders.map(f => `<option value="${f.id}" ${cur===f.id?'selected':''}>${esc(f.name)}</option>`).join('');
+  }
+
+  const collapsed = JSON.parse(localStorage.getItem('folder-collapsed') || '{}');
+  const content = v('links-content');
+  if (!content) return;
+
+  let html = '';
+
+  // Folders
+  folders.forEach(folder => {
+    const folderLinks = links.filter(l => l.folder_id === folder.id);
+    const isCollapsed = collapsed[folder.id] === true;
+    html += `<div class="links-folder">
+      <div class="links-folder-header" onclick="toggleFolder('${folder.id}')">
+        <span class="links-folder-icon ${isCollapsed?'closed':'open'}" id="folder-icon-${folder.id}">▾</span>
+        <span class="links-folder-name">📁 ${esc(folder.name)}</span>
+        <span class="links-folder-count">${folderLinks.length}</span>
+        <button class="links-folder-del" onclick="event.stopPropagation();deleteFolder('${folder.id}')" title="Delete folder">✕</button>
+      </div>
+      <div class="links-folder-body ${isCollapsed?'hidden':''}" id="folder-body-${folder.id}" data-folder="${folder.id}">
+        ${folderLinks.length ? folderLinks.map(l => linkRowHTML(l)).join('') : '<div style="padding:10px 14px;font-size:12px;color:var(--lb-200)">No links yet — drag links here or add with this folder selected</div>'}
+      </div>
+    </div>`;
+  });
+
+  // Ungrouped links
+  const ungrouped = links.filter(l => !l.folder_id);
+  if (ungrouped.length || !folders.length) {
+    html += `<div class="links-ungrouped">
+      ${folders.length ? '<div class="links-ungrouped-label">Ungrouped</div>' : ''}
+      <div id="ungrouped-links" data-folder="">
+        ${ungrouped.length ? ungrouped.map(l => linkRowHTML(l)).join('') : '<div style="padding:10px 0;font-size:12px;color:var(--lb-200)">No links yet — add your first bookmark above</div>'}
+      </div>
+    </div>`;
+  }
+
+  content.innerHTML = html;
+
+  // Init drag on all folders and ungrouped
+  folders.forEach(f => initFolderDrag(f.id));
+  initUngroupedDrag();
+}
+
