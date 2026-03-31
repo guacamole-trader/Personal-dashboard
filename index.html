@@ -401,40 +401,40 @@
               <span class="section-title">Links</span>
               <div class="section-meta">
                 <span class="meta-stat" id="links-stat"></span>
-                <button class="action-btn" onclick="exportCSV('links')">⬇ Export CSV</button>
+                <button class="action-btn" onclick="openAddFolder()">📁 New folder</button>
+                <button class="action-btn" onclick="exportLinksCSV()">⬇ Export CSV</button>
               </div>
             </div>
-            <div class="search-row"><input class="search-input" id="search-links" placeholder="Search links…" oninput="filterTable('links')"/><span class="sort-hint">Click column headers to sort</span></div>
-            <div class="todo-table-wrap">
-              <table class="todo-table" id="table-links">
-                <thead>
-                  <tr><th class="drag-th"></th><th onclick="sortTable('links',1)">Title ↕</th><th onclick="sortTable('links',2)">URL</th><th>Open</th><th onclick="sortTable('links',3)">Category ↕</th><th>Note</th><th onclick="sortTable('links',4)">Status ↕</th><th></th></tr>
-                  <tr class="add-row">
-                    <td></td>
-                    <td><input id="links-title" placeholder="e.g. My bank…"></td>
-                    <td><input id="links-url" placeholder="https://…"></td>
-                    <td></td>
-                    <td><select id="links-category">
-                      <option value="Finance">Finance</option>
-                      <option value="Trading">Trading</option>
-                      <option value="Work">Work</option>
-                      <option value="Health">Health</option>
-                      <option value="Government">Government</option>
-                      <option value="Shopping">Shopping</option>
-                      <option value="Social Media">Social Media</option>
-                      <option value="News">News</option>
-                      <option value="Tools">Tools</option>
-                      <option value="Entertainment">Entertainment</option>
-                      <option value="Other">Other</option>
-                    </select></td>
-                    <td><input id="links-note" placeholder="Note…"></td>
-                    <td><select id="links-status"><option value="Active">Active</option><option value="Archived">Archived</option></select></td>
-                    <td><button class="add-btn" onclick="addItem('links')">+ Add</button></td>
-                  </tr>
-                </thead>
-                <tbody id="links-list"></tbody>
-              </table>
+
+            <!-- ADD LINK FORM -->
+            <div class="search-row" style="margin-bottom:10px">
+              <input class="search-input" id="search-links" placeholder="Search links…" oninput="filterLinks()"/>
             </div>
+            <div class="links-add-bar">
+              <input id="links-title" placeholder="Title e.g. My bank…" style="flex:2">
+              <input id="links-url" placeholder="https://…" style="flex:3">
+              <select id="links-folder-select" style="flex:1.5"><option value="">No folder</option></select>
+              <select id="links-category" style="flex:1.5">
+                <option value="Finance">Finance</option><option value="Trading">Trading</option>
+                <option value="Work">Work</option><option value="Health">Health</option>
+                <option value="Government">Government</option><option value="Shopping">Shopping</option>
+                <option value="Social Media">Social Media</option><option value="News">News</option>
+                <option value="Tools">Tools</option><option value="Entertainment">Entertainment</option>
+                <option value="Other">Other</option>
+              </select>
+              <input id="links-note" placeholder="Note…" style="flex:2">
+              <button class="add-btn" onclick="addLink()">+ Add</button>
+            </div>
+
+            <!-- ADD FOLDER MODAL -->
+            <div id="add-folder-bar" style="display:none" class="links-add-bar">
+              <input id="folder-name-input" placeholder="Folder name…" style="flex:1" onkeydown="if(event.key==='Enter')saveFolder()">
+              <button class="add-btn" onclick="saveFolder()">+ Create</button>
+              <button class="action-btn" onclick="closeAddFolder()">Cancel</button>
+            </div>
+
+            <!-- LINKS CONTENT -->
+            <div id="links-content"></div>
           </div>
 
         </div><!-- end main -->
